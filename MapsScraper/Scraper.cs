@@ -12,11 +12,11 @@ using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using System.Threading.Tasks;
 using System.Windows.Media.Media3D;
-using static MapsScraper.BusinessRecord;
+using static GoogleMapsScraper.BusinessRecord;
 
-namespace MapsScraper
+namespace GoogleMapsScraper
 {
-    public class GoogleMapsScraper(string query)
+    public class Scraper(string query)
     {
         private readonly string _query = query;
         private IBrowser? _browser;

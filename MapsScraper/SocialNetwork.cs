@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace MapsScraper
+namespace GoogleMapsScraper
 {
 
     public class SocialNetwork
@@ -31,7 +31,7 @@ namespace MapsScraper
 
         public bool IsExcluded(string url)
         {
-            return System.Text.RegularExpressions.Regex.IsMatch(url, Exclusion, RegexOptions.IgnoreCase);
+            return Regex.IsMatch(url, Exclusion, RegexOptions.IgnoreCase);
         }
     }
 

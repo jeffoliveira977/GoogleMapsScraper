@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace MapsScraper
+namespace GoogleMapsScraper
 {
     class EmailExtractor
     {

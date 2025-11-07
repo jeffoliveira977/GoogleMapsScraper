@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GoogleMapsScraper;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -7,12 +8,16 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace MapsScraper
+namespace GoogleMapsScraper
 {
     internal class SearchService(string? currentSearchId = null)
     {
         private readonly string _filePath = "data/searchs.json";
         private readonly string _currentSearchId = currentSearchId?? "";
+        private readonly JsonSerializerOptions jsonSerializerOptions = new()
+        {
+            WriteIndented = true
+        };
 
         public List<Search> GetSearches()
         {
@@ -44,6 +49,42 @@ namespace MapsScraper
             {
                 Console.WriteLine($"Erro ao obter pesquisas: {ex.Message}");
                 return [];
+            }
+        }
+
+        public void SaveTofile(Search searches)
+        {
+
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
+
+                var data = new List<Search>();
+
+                if (File.Exists(_filePath) && new FileInfo(_filePath).Length > 0)
+                {
+                    string text = File.ReadAllText(_filePath);
+                    var existing = JsonSerializer.Deserialize<List<Search>>(text);
+
+                    if (existing != null)
+                        data = existing;
+                }
+
+                data.Add(searches);     
+
+                string json = JsonSerializer.Serialize(data, jsonSerializerOptions);
+                File.WriteAllText(_filePath, json);
+
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Erro ao decodificar JSON: {ex.Message}");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao obter pesquisas: {ex.Message}");
+                return;
             }
         }
 

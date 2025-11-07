@@ -1,5 +1,7 @@
 ﻿using CsvHelper;
+using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Wordprocessing;
+using GoogleMapsScraper;
 using Microsoft.Playwright;
 using System;
 using System.Collections.ObjectModel;
@@ -29,6 +31,7 @@ namespace MapsScraper
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly SearchService _service = new(currentSearchId: "1e398cfc-eb7f-465f-b2a4-3537c1447de0");
         private ObservableCollection<PlaceResult> results = [];
         private DispatcherTimer timer = new();
         private int currentProgress;
@@ -44,17 +47,39 @@ namespace MapsScraper
         {
             InitializeComponent();
             InitializeData();
-            //this.Loaded += async (s, e) => await IniciarScrapingAsync();
+            this.Loaded += async (s, e) => await IniciarScrapingAsync();
         }
 
         private async Task IniciarScrapingAsync()
         {
             try
             {
-                var scraper = new GoogleMapsScraper("lojas de roupas em Porto Alegre");
+                var scraper = new GoogleMapsScraper.Scraper("lojas de roupas em Porto Alegre");
                 var records = await scraper.RunAsync();
+                var db = new GoogleMapsScraper.LeadsDatabase();
+                await db.SaveRecordsAsync(records);
 
- 
+                var search_term = "lojas de roupas";
+                var location = "Porto Alegre";
+                var search_id = Guid.NewGuid().ToString();
+                var full_term = $"{search_term} em {location}";
+                var status = "pending";
+                var created_at = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+
+                var data = new Search
+                {
+                    SearchTerm = search_term,
+                    Location = location,
+                    FullTerm = full_term,
+                    SearchId = search_id,
+                    Status = status,
+                    CreatedAt = created_at,
+                    StartedAt = created_at,
+                    TotalLeads = records.Count
+                };
+
+                _service.SaveTofile(data);
+
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
                 string jsonPath = $"data/leads_google_maps-{timestamp}.json";
                 string csvPath = $"data/leads_google_maps-{timestamp}.csv";
@@ -76,18 +101,18 @@ namespace MapsScraper
 
         private void InitializeData()
         {
-            results = new ObservableCollection<PlaceResult>();
+            results = [];
             dgResults.ItemsSource = results;
 
-            timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(50);
+            timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(50)
+            };
             timer.Tick += Timer_Tick;
 
             UpdateResultCount();
-
-      
-            var service = new SearchService(currentSearchId: "1e398cfc-eb7f-465f-b2a4-3537c1447de0");
-            var searches = service.GetSearches();
+            
+            var searches = _service.GetSearches();
 
             CardsContainer.ItemsSource = searches;
         }
