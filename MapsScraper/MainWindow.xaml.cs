@@ -45,10 +45,50 @@ namespace MapsScraper
        
         public MainWindow()
         {
+            var PlaywrightFolderName = "ms-playwright";
+        
+            string sourceDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PlaywrightFolderName);
+        
+            string localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string destinationDir = System.IO.Path.Combine(localAppDataPath, PlaywrightFolderName);
+        
+            try
+            {
+                if (Directory.Exists(destinationDir))
+                {
+                    Directory.Delete(destinationDir, true);
+                }
+        
+                CopyFolder(sourceDir, destinationDir);
+                Environment.SetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH", destinationDir);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        
+            CopyFolder(sourceDir, destinationDir);
+        
             InitializeComponent();
             InitializeData();
             this.Loaded += async (s, e) => await IniciarScrapingAsync();
         }
+        
+        public static void CopyFolder(string sourcePath, string destinationPath)
+        {
+            Directory.CreateDirectory(destinationPath);
+        
+            foreach (string file in Directory.GetFiles(sourcePath))
+            {
+                File.Copy(file, System.IO.Path.Combine(destinationPath, System.IO.Path.GetFileName(file)), true);
+            }
+        
+            foreach (string subDirectory in Directory.GetDirectories(sourcePath))
+            {
+                CopyFolder(subDirectory, System.IO.Path.Combine(destinationPath, System.IO.Path.GetFileName(subDirectory)));
+            }
+        }   
+
 
         private async Task IniciarScrapingAsync()
         {
