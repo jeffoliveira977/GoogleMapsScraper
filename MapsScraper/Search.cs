@@ -10,25 +10,25 @@ namespace GoogleMapsScraper
     internal class Search
     {
         [JsonPropertyName("search_term")]
-        public string SearchTerm { get; set; }
+        public string ?SearchTerm { get; set; }
 
         [JsonPropertyName("location")]
-        public string Location { get; set; }
+        public string ?Location { get; set; }
 
         [JsonPropertyName("full_term")]
-        public string FullTerm { get; set; }
+        public string ?FullTerm { get; set; }
 
         [JsonPropertyName("search_id")]
-        public string SearchId { get; set; }
+        public string ?SearchId { get; set; }
 
         [JsonPropertyName("status")]
-        public string Status { get; set; }
+        public string ?Status { get; set; }
 
         [JsonPropertyName("created_at")]
-        public string CreatedAt { get; set; }
+        public string ?CreatedAt { get; set; }
 
         [JsonPropertyName("started_at")]
-        public string StartedAt { get; set; }
+        public string ?StartedAt { get; set; }
 
         [JsonPropertyName("total_leads")]
         public int TotalLeads { get; set; }
