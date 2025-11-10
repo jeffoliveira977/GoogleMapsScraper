@@ -24,7 +24,6 @@ namespace GoogleMapsScraper
         {
             Timeout = TimeSpan.FromSeconds(20)
         };
-
         static ContactExtractor()
         {
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
@@ -400,7 +399,6 @@ namespace GoogleMapsScraper
                 var text = await response.Content.ReadAsStringAsync();
                 var cnpj = ExtractCnpjFromUrl(text);
                 var socialType = SocialNetworks.GetSocialNetworkTypeFromUrl(url);
-    
                 if (!string.IsNullOrEmpty(socialType) && socialLinks.ContainsKey(socialType))
                 {
                     socialLinks[socialType] = url;
@@ -416,6 +414,8 @@ namespace GoogleMapsScraper
                             Console.WriteLine($"{directEmails.Count} emails do Facebook");
                         }
                     }
+
+                    url = "";
                 }
                 else
                 {
@@ -451,6 +451,7 @@ namespace GoogleMapsScraper
 
                 return new Dictionary<string, object>
                 {
+                    ["url"] = url,
                     ["email"] = emails.Count != 0 ? string.Join(", ", emails) : "",
                     ["cnpj"] = cnpj ?? "",
                     ["facebook"] = socialLinks["facebook"],

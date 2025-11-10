@@ -87,6 +87,7 @@ namespace GoogleMapsScraper
             {
                 var data = await ContactExtractor.ExtractContactsUrl(record.Url!, record.Domain!);
 
+                record.Url = GetValue(data, "url");
                 record.Cnpj = GetValue(data, "cnpj");
                 record.Email = GetValue(data, "email");
                 record.Facebook = GetValue(data, "facebook");

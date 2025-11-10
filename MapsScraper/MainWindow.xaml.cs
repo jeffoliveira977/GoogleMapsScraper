@@ -5,6 +5,7 @@ using GoogleMapsScraper;
 using Microsoft.Playwright;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
@@ -31,47 +32,18 @@ namespace MapsScraper
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly SearchService _service = new(currentSearchId: "1e398cfc-eb7f-465f-b2a4-3537c1447de0");
-        private ObservableCollection<PlaceResult> results = [];
-        private DispatcherTimer timer = new();
-        private int currentProgress;
-        private string? uploadedFilePath;
 
-        private static readonly JsonSerializerOptions CachedJsonOptions = new()
-        {
-            WriteIndented = true,
-            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-        };
+        private string? uploadedFilePath;
+        public MainViewModel ViewModel { get; set; }
        
         public MainWindow()
         {
-            var PlaywrightFolderName = "ms-playwright";
-        
-            string sourceDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PlaywrightFolderName);
-        
-            string localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string destinationDir = System.IO.Path.Combine(localAppDataPath, PlaywrightFolderName);
-        
-            try
-            {
-                if (Directory.Exists(destinationDir))
-                {
-                    Directory.Delete(destinationDir, true);
-                }
-        
-                CopyFolder(sourceDir, destinationDir);
-                Environment.SetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH", destinationDir);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
-        
-            CopyFolder(sourceDir, destinationDir);
-        
+            string playwrightPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ms-playwright");
+            Environment.SetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH", playwrightPath);
+            
             InitializeComponent();
-            InitializeData();
-            this.Loaded += async (s, e) => await IniciarScrapingAsync();
+            ViewModel = new GoogleMapsScraper.MainViewModel();
+            this.DataContext = ViewModel;
         }
         
         public static void CopyFolder(string sourcePath, string destinationPath)
@@ -87,87 +59,69 @@ namespace MapsScraper
             {
                 CopyFolder(subDirectory, System.IO.Path.Combine(destinationPath, System.IO.Path.GetFileName(subDirectory)));
             }
-        }   
-
-
-        private async Task IniciarScrapingAsync()
+        }
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
+            string rawUrl = e.Uri.OriginalString;
+            string finalUrl;
+
+            if (rawUrl.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase) ||
+                rawUrl.StartsWith("tel:", StringComparison.OrdinalIgnoreCase))
+            {
+                finalUrl = rawUrl;
+            }
+            else if (!rawUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                     !rawUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                finalUrl = $"http://{rawUrl}";
+            }
+            else
+            {
+                finalUrl = rawUrl;
+            }
+
             try
             {
-                var scraper = new GoogleMapsScraper.Scraper("lojas de roupas em Porto Alegre");
-                var records = await scraper.RunAsync();
-                var db = new GoogleMapsScraper.LeadsDatabase();
-                await db.SaveRecordsAsync(records);
+                Process.Start(new ProcessStartInfo(finalUrl) { UseShellExecute = true });
 
-                var search_term = "lojas de roupas";
-                var location = "Porto Alegre";
-                var search_id = Guid.NewGuid().ToString();
-                var full_term = $"{search_term} em {location}";
-                var status = "pending";
-                var created_at = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
-
-                var data = new Search
-                {
-                    SearchTerm = search_term,
-                    Location = location,
-                    FullTerm = full_term,
-                    SearchId = search_id,
-                    Status = status,
-                    CreatedAt = created_at,
-                    StartedAt = created_at,
-                    TotalLeads = records.Count
-                };
-
-                _service.SaveTofile(data);
-
-                string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-                string jsonPath = $"data/leads_google_maps-{timestamp}.json";
-                string csvPath = $"data/leads_google_maps-{timestamp}.csv";
-
-                Directory.CreateDirectory("data");
-
-                await File.WriteAllTextAsync(jsonPath, JsonSerializer.Serialize(records, CachedJsonOptions));
-
-                using var writer = new StreamWriter(csvPath);
-                using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-                csv.WriteRecords(records);
-
+                e.Handled = true;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                Debug.WriteLine($"Erro ao abrir link ({finalUrl}): {ex.Message}");
             }
-        }
-
-        private void InitializeData()
-        {
-            results = [];
-            dgResults.ItemsSource = results;
-
-            timer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(50)
-            };
-            timer.Tick += Timer_Tick;
-
-            UpdateResultCount();
-            
-            var searches = _service.GetSearches();
-
-            CardsContainer.ItemsSource = searches;
         }
 
         private void BtnNewSearch_Click(object sender, RoutedEventArgs e)
         {
             
             modalOverlay.Visibility = Visibility.Visible;
+           
         }
 
-        private void Card_Click(object sender, RoutedEventArgs e)
+        private void ShowExportMenu_Click(object sender, RoutedEventArgs e)
         {
-            itemsTable.Visibility = Visibility.Visible;
-            CardsGrid.Visibility = Visibility.Hidden;
+            if (sender is Button button && button.ContextMenu is ContextMenu menu)
+            {
+                menu.PlacementTarget = button;
+
+                menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+
+                menu.IsOpen = true;
+            }
         }
+
+        private void MenuItemExport_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem menuItem)
+            {
+                string? format = menuItem.Tag?.ToString();
+
+                MessageBox.Show($"Iniciando exportação para {format}...", "Exportar");
+                ViewModel.ExportData(format);
+            }
+        }
+
 
         private void BtnCloseModal_Click(object sender, RoutedEventArgs e)
         {
@@ -223,74 +177,18 @@ namespace MapsScraper
 
            
             modalOverlay.Visibility = Visibility.Collapsed;
-            
-            results.Clear();
-     
-            txtStatus.Text = "Status: Extraindo dados do Google Maps...";
-            txtStatus.Foreground = System.Windows.Media.Brushes.Orange;
-            
-            currentProgress = 0;
-            progressBar.Value = 0;
-            timer.Start();
-
-           
-            SimulateScraping();
-        }
-
-        private void SimulateScraping()
-        {
-            
-            var random = new Random();
-            var searchTerms = txtModalSearchTerms.Text.Split(new[] { '\r', '\n' },
-                StringSplitOptions.RemoveEmptyEntries);
-
-            var sampleNames = new[] { "La Pasta", "Il Forno", "Cucina Italiana", "Sapore Italiano",
-                "Villa Romana", "Bella Vista", "Trattoria", "Osteria", "Pizzeria Margherita", "Cantina" };
-            var sampleStreets = new[] { "Rua Augusta", "Av. Paulista", "Rua Oscar Freire",
-                "Alameda Santos", "Rua Haddock Lobo", "Rua da Consolação" };
-            var sampleNeighborhoods = new[] { "Consolação", "Jardins", "Pinheiros", "Vila Madalena",
-                "Itaim Bibi", "Bela Vista" };
-
-            int resultCount = random.Next(12, 25);
-
-            for (int i = 0; i < resultCount; i++)
-            {
-                var place = new PlaceResult
-                {
-                    Name = $"{sampleNames[random.Next(sampleNames.Length)]} {i + 1}",
-                    Address = $"{sampleStreets[random.Next(sampleStreets.Length)]}, {random.Next(100, 3000)} - {sampleNeighborhoods[random.Next(sampleNeighborhoods.Length)]}, {txtModalLocation.Text}",
-                    Phone = $"(11) {random.Next(2000, 9999)}-{random.Next(1000, 9999)}",
-                    Rating = $"⭐ {random.Next(35, 50) / 10.0:0.0}"
-                };
-
-                results.Add(place);
-            }
-
-            UpdateResultCount();
+  
+            ViewModel.StartSearch(txtModalSearchTerms.Text, txtModalLocation.Text);
         }
 
         private void Timer_Tick(object? sender, EventArgs e)
         {
-            currentProgress += 3;
-            progressBar.Value = currentProgress;
-
-            if (currentProgress >= 100)
-            {
-                timer.Stop();
-                txtStatus.Text = $"Status: Extração concluída com sucesso! ✓";
-                txtStatus.Foreground = System.Windows.Media.Brushes.Green;
-                currentProgress = 0;
-            }
+       
         }
 
         private void BtnExport_Click(object sender, RoutedEventArgs e)
         {
-            if (results.Count == 0)
-            {
-                MessageBox.Show("Não há resultados para exportar!", "Aviso",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            
 
             var saveDialog = new Microsoft.Win32.SaveFileDialog
             {
@@ -309,10 +207,10 @@ namespace MapsScraper
                         writer.WriteLine("Nome,Endereço,Telefone,Avaliação");
 
                        
-                        foreach (var result in results)
-                        {
-                            writer.WriteLine($"\"{result.Name}\",\"{result.Address}\",\"{result.Phone}\",\"{result.Rating}\"");
-                        }
+                       // foreach (var result in results)
+                        //{
+                         //   writer.WriteLine($"\"{result.Name}\",\"{result.Address}\",\"{result.Phone}\",\"{result.Rating}\"");
+                        //}
                     }
 
                     MessageBox.Show($"Dados exportados com sucesso!\n\nArquivo: {saveDialog.FileName}",
@@ -328,32 +226,12 @@ namespace MapsScraper
 
         private void BtnClear_Click(object sender, RoutedEventArgs e)
         {
-            if (results.Count > 0)
-            {
-                var result = MessageBox.Show("Deseja realmente limpar todos os resultados?",
-                    "Confirmação", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    results.Clear();
-                    progressBar.Value = 0;
-                    txtStatus.Text = "Status: Aguardando busca...";
-                    txtStatus.Foreground = System.Windows.Media.Brushes.Gray;
-                    UpdateResultCount();
-                }
-            }
+            
         }
 
         private void UpdateResultCount()
         {
-            txtResultCount.Text = $"{results.Count} resultados encontrados";
+            
         }
-    }
-    public class PlaceResult
-    {
-        public string ?Name { get; set; }
-        public string ?Address { get; set; }
-        public string ?Phone { get; set; }
-        public string ?Rating { get; set; }
     }
 }

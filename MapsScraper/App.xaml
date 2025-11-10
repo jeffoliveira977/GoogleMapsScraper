@@ -4,6 +4,19 @@
              xmlns:local="clr-namespace:MapsScraper"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
+        
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
 
-    </Application.Resources>
+                <!-- Tente este formato -->
+                <ResourceDictionary Source="/Resources/Styles.xaml"/>
+                <ResourceDictionary Source="/Resources/globe.xaml"/>
+                <ResourceDictionary Source="/Resources/tiktok.xaml"/>
+                <ResourceDictionary Source="/Resources/x.xaml"/>
+                <ResourceDictionary Source="/Resources/facebook.xaml"/>
+                <ResourceDictionary Source="/Resources/instagram.xaml"/>
+                <ResourceDictionary Source="/Resources/youtube.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>    
 </Application>

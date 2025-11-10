@@ -1,41 +1,89 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices; // Adicionado para simplificar OnPropertyChanged
 
 namespace GoogleMapsScraper
 {
-    internal class Search
+    public class Search : INotifyPropertyChanged
     {
+        // 💡 Variável de suporte (backing field) para a propriedade Status
+        private string? _status;
+        private int _total_leads;
+
+        // 💡 Variável de suporte (backing field) para a propriedade IsCurrent
+        private bool _isCurrent;
+
+        // O restante das propriedades automáticas
         [JsonPropertyName("search_term")]
-        public string ?SearchTerm { get; set; }
+        public string? SearchTerm { get; set; }
 
         [JsonPropertyName("location")]
-        public string ?Location { get; set; }
+        public string? Location { get; set; }
 
         [JsonPropertyName("full_term")]
-        public string ?FullTerm { get; set; }
+        public string? FullTerm { get; set; }
 
         [JsonPropertyName("search_id")]
-        public string ?SearchId { get; set; }
+        public string? SearchId { get; set; }
 
-        [JsonPropertyName("status")]
-        public string ?Status { get; set; }
 
         [JsonPropertyName("created_at")]
-        public string ?CreatedAt { get; set; }
+        public string? CreatedAt { get; set; }
 
         [JsonPropertyName("started_at")]
-        public string ?StartedAt { get; set; }
+        public string? StartedAt { get; set; }
 
         [JsonPropertyName("total_leads")]
-        public int TotalLeads { get; set; }
+        public int TotalLeads { 
+            get => _total_leads; 
+            set
+            {
+                if (_total_leads != value)
+                {
+                    _total_leads = value;
+                    OnPropertyChanged();
+                }
+            }
+
+        }
 
         [JsonPropertyName("queue_position")]
         public int QueuePosition { get; set; }
 
-        public bool IsCurrent { get; set; }
+        [JsonPropertyName("status")]
+        public string? Status
+        {
+            get => _status;
+            set
+            {
+                if (_status != value)
+                {
+                    _status = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsCurrent
+        {
+            get => _isCurrent;
+            set
+            {
+                if (_isCurrent != value)
+                {
+                    _isCurrent = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

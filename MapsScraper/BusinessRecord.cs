@@ -7,6 +7,7 @@ namespace GoogleMapsScraper
 {
         public class BusinessRecord
         {
+            public string? SearchId { get; set; }
             public string? Name { get; set; }
             public string? Url { get; set; }
             public string Email { get; set; } = "";
@@ -27,9 +28,15 @@ namespace GoogleMapsScraper
             public bool Processed { get; set; } = false;
             public object? Key { get; set; }
 
+            public BusinessRecord()
+            {
+           
+            }
 
             public BusinessRecord(JsonElement data)
             {
+                SearchId = string.Empty;
+
                 Name = SafeGet(data, 11).ToString() ?? string.Empty;
                 Url = SafeGet(data, 7, 0).ToString() ?? string.Empty;
 
