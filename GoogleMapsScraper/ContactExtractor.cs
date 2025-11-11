@@ -139,11 +139,13 @@ namespace GoogleMapsScraper
             if (patternType == "support")
             {
                 if (pathname.EndsWith($"-{keyword}", StringComparison.OrdinalIgnoreCase)) return false;
+
                 if (Regex.IsMatch(pathname, @"/(suporte|support)", RegexOptions.IgnoreCase))
                 {
                     Console.WriteLine(pathname);
                     return false;
                 }
+
                 if (pathname.StartsWith($"/{keyword}", StringComparison.OrdinalIgnoreCase))
                     return !IsPathnameComplex(pathname);
 
@@ -180,7 +182,9 @@ namespace GoogleMapsScraper
             if ((url.Contains("://") || url.Contains("www.")) && !url.Contains(Utils.GetDomainName(baseUrl))) return null;
 
             if (UrlMayContainContactInfo(url))
-                return url;
+            { 
+                return url; 
+            }
             else
             {
                 outInvalid?.Add(url);
@@ -403,7 +407,6 @@ namespace GoogleMapsScraper
                 {
                     socialLinks[socialType] = url;
 
-                    // Facebook: apenas fetch direto
                     if (socialType == "facebook")
                     {
                         Console.WriteLine($"Facebook detectado: {url}");

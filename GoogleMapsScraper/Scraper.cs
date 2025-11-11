@@ -176,7 +176,7 @@ namespace GoogleMapsScraper
 
                 previousHeight = height;
                 scrollAttempts++;
-                Console.WriteLine($"Rolando... tentativa {scrollAttempts}");
+                Console.WriteLine($"Scrolling... attempt {scrollAttempts}");
                 await _page.WaitForTimeoutAsync(3000);
             }
         }

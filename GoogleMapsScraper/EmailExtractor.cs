@@ -43,7 +43,6 @@ namespace GoogleMapsScraper
             "me", "br", "uk", "ca", "de", "tech", "app", "online", "shop",
         };
 
-        // Detecta repetição de 3+ caracteres idênticos no domínio
         private static bool HasRepeatedCharacters(string domain)
         {
             return Regex.IsMatch(domain, @"(.)\1\1+", RegexOptions.IgnoreCase);
@@ -51,11 +50,8 @@ namespace GoogleMapsScraper
 
         private static string DecodeCloudflareEmail(string email)
         {
-            if (email == null)
+            if (String.IsNullOrEmpty(email))
                 throw new Exception("Cannot decode None value. Please provide a valid encoded email string.");
-
-            if (!(email is string))
-                throw new Exception($"Invalid input type. Expected string, got {email.GetType().Name}.");
 
             if (email.Length < 2)
                 throw new Exception("Encoded email string too short. Minimum length is 2 characters.");

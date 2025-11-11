@@ -1,0 +1,722 @@
+﻿<Window
+    x:Class="GoogleMapsScraper.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:converters="clr-namespace:GoogleMapsScraper.Converters"
+    Title="Google Maps Scraper"
+    Width="1100"
+    Height="750"
+    Background="#F5F5F5"
+    ResizeMode="CanResizeWithGrip"
+    WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+        <converters:StatusToColorConverter x:Key="StatusToColorCTonverter" />
+    </Window.Resources>
+    
+    <Grid>
+        <Grid x:Name="InstallPopup" 
+          Background="#80000000"
+          Panel.ZIndex="1000"
+          Visibility="Collapsed">
+            <Border Background="White"
+                CornerRadius="12"
+                MaxWidth="450"
+                Padding="32"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect Color="#000000" 
+                                  Opacity="0.2" 
+                                  BlurRadius="20" 
+                                  ShadowDepth="4"/>
+                </Border.Effect>
+
+                <StackPanel>
+
+                    <Grid Width="64" Height="64" Margin="0,0,0,24" HorizontalAlignment="Center">
+                        <Ellipse x:Name="IconBackground" Fill="#F0F9FF"/>
+                        <Path x:Name="PopupIconPath"
+                          Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M11,9V11H13V9H11M11,13V17H13V13H11Z"
+                          Fill="#3B82F6"
+                          Stretch="Uniform"
+                          Width="32"
+                          Height="32"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          RenderTransformOrigin="0.5,0.5">
+                            <Path.RenderTransform>
+                                <RotateTransform x:Name="PopupIconRotation" Angle="0"/>
+                            </Path.RenderTransform>
+                        </Path>
+                    </Grid>
+
+                    <TextBlock x:Name="PopupTitleText"
+                           Text="Instalação Necessária"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           Foreground="#1F2937"
+                           TextAlignment="Center"
+                           Margin="0,0,0,12"/>
+
+                    <TextBlock x:Name="PopupMessageText"
+                           Text="Iniciando a instalação do Playwright."
+                           FontSize="14"
+                           Foreground="#6B7280"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           LineHeight="20"
+                           Margin="0,0,0,24"/>
+
+                    <ProgressBar x:Name="PopupProgressBar"
+                             Height="4"
+                             IsIndeterminate="True"
+                             Visibility="Visible"
+                             Margin="0,0,0,24"
+                             Foreground="#3B82F6"
+                             Background="#E5E7EB"
+                             BorderThickness="0"/>
+                    
+                    <Button x:Name="PopupOkButton"
+                        Content="OK"
+                        Click="PopupOkButton_Click"
+                        Height="40"
+                        FontSize="14"
+                        FontWeight="Medium"
+                        Cursor="Hand"
+                        Visibility="Collapsed">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#3B82F6"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="8"
+                                                Padding="24,0">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#2563EB"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="MainContent">
+            <Grid Background="#F5F5F5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Border
+                    Grid.Row="0"
+                    Padding="30,25"
+                    Background="White"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="0,0,0,1">
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock
+                                Margin="0,0,0,5"
+                                FontSize="24"
+                                FontWeight="Bold"
+                                Foreground="#333333"
+                                Text="Google Maps Scraper" />
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="#666666"
+                                Text="Extraia dados de estabelecimentos do Google Maps" />
+                        </StackPanel>
+                        <Button
+                            HorizontalAlignment="Right"
+                            Click="BtnNewSearch_Click"
+                            Content="Nova Busca"
+                            Style="{StaticResource PrimaryButton}" />
+                    </Grid>
+                </Border>
+
+                <Grid
+                    x:Name="CardsGrid"
+                    Grid.Row="2"
+                    Margin="30"
+                    Visibility="{Binding IsCardsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl
+                            x:Name="CardsContainer"
+                            Height="496"
+                            ItemsSource="{Binding SearchLeads}"
+                            RenderTransformOrigin="0.502,0.417">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel
+                                        Margin="10"
+                                        ItemHeight="150"
+                                        ItemWidth="280"
+                                        Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        Command="{Binding DataContext.ViewSearchDetailsCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource CardActionButtonStyle}">
+                                        <Button.Content>
+                                            <StackPanel x:Name="GridItems">
+                                                <TextBlock
+                                                    Margin="0,0,0,10"
+                                                    FontSize="14"
+                                                    FontWeight="Bold"
+                                                    Text="{Binding SearchTerm}" />
+                                                <Grid HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                    <Border
+                                                        Margin="0,0,0,5"
+                                                        Padding="6,2"
+                                                        CornerRadius="10">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="#FFF3F4F6" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Status}" Value="Failed">
+                                                                        <Setter Property="Background" Value="#FFFBEEEE" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Status}" Value="Success">
+                                                                        <Setter Property="Background" Value="#FFF3F9F5" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Status}" Value="Running">
+                                                                        <Setter Property="Background" Value="#FFFDF6E7" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                                            <Path Style="{StaticResource PathStatusIconStyle}" />
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                FontSize="11"
+                                                                FontWeight="Bold"
+                                                                Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
+                                                                Text="{Binding Status}" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </Grid>
+                                                <StackPanel Margin="0,0,0,6" Orientation="Horizontal">
+                                                    <Path Data="{StaticResource CalendarIconGeometry}" Style="{StaticResource DefaultIcon}" />
+                                                    <TextBlock
+                                                        FontSize="12"
+                                                        Foreground="#6b7280"
+                                                        Text="{Binding CreatedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm:ss}'}" />
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Path Data="{StaticResource UsersIconGeometry}" Style="{StaticResource DefaultIcon}" />
+                                                    <TextBlock
+                                                        FontSize="12"
+                                                        Foreground="#6b7280"
+                                                        Text="{Binding TotalLeads, StringFormat='{}{0} leads'}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Button.Content>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+                <Grid
+                    x:Name="itemsTable"
+                    Grid.Row="1"
+                    Margin="30"
+                    Visibility="{Binding IsTableVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Border
+                        Grid.Row="0"
+                        Margin="0,0,0,15"
+                        Padding="0"
+                        Background="Transparent">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button
+                                Grid.Column="0"
+                                Padding="12,8"
+                                HorizontalAlignment="Left"
+                                Background="White"
+                                Command="{Binding BackToCardsCommand}"
+                                Style="{StaticResource SecondaryButton}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource ArrowLeftIconGeometry}" Style="{StaticResource DefaultIcon}" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontWeight="SemiBold"
+                                        Foreground="#333333"
+                                        Text="Voltar para Buscas" />
+                                </StackPanel>
+                            </Button>
+                            <StackPanel
+                                Grid.Column="1"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+                                <Button
+                                    x:Name="BtnExportDropdown"
+                                    Margin="0,0,20,0"
+                                    Padding="16,10"
+                                    Click="ShowExportMenu_Click"
+                                    Style="{StaticResource SecondaryButton}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource FileExportIconGeometry}" Style="{StaticResource DefaultIcon}" />
+                                        <TextBlock VerticalAlignment="Center" Text="Exportar Dados" />
+                                    </StackPanel>
+                                    <Button.ContextMenu>
+                                        <ContextMenu
+                                            x:Name="ExportContextMenu"
+                                            Placement="Bottom"
+                                            PlacementTarget="{Binding ElementName=BtnExportDropdown}"
+                                            StaysOpen="False"
+                                            Style="{StaticResource ExportContextMenuStyle}">
+                                            <MenuItem
+                                                Click="MenuItemExport_Click"
+                                                Header="CSV (.csv)"
+                                                Tag="CSV">
+                                                <MenuItem.Icon>
+                                                    <Path
+                                                        Width="16"
+                                                        Height="16"
+                                                        Data="{StaticResource CsvIconGeometry}"
+                                                        Style="{StaticResource DefaultIcon}" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem
+                                                Click="MenuItemExport_Click"
+                                                Header="Excel (.xlsx)"
+                                                Tag="Excel">
+                                                <MenuItem.Icon>
+                                                    <Path
+                                                        Width="16"
+                                                        Height="16"
+                                                        Data="{StaticResource ExcelIconGeometry}"
+                                                        Style="{StaticResource DefaultIcon}" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem
+                                                Click="MenuItemExport_Click"
+                                                Header="Json (.json)"
+                                                Tag="Json">
+                                                <MenuItem.Icon>
+                                                    <Path
+                                                        Width="16"
+                                                        Height="16"
+                                                        Data="{StaticResource JsonIconGeometry}"
+                                                        Style="{StaticResource DefaultIcon}" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                        </ContextMenu>
+                                    </Button.ContextMenu>
+                                </Button>
+                                <Button
+                                    Padding="16,8"
+                                    Click="BtnClear_Click"
+                                    Style="{StaticResource SecondaryButton}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource DeleteIconGeometry}" Style="{StaticResource DefaultIcon}" />
+                                        <TextBlock VerticalAlignment="Center" Text="Limpar" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <Border
+                        Grid.Row="1"
+                        Padding="0"
+                        Background="White"
+                        BorderBrush="#E0E0E0"
+                        BorderThickness="1"
+                        CornerRadius="12">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <DataGrid
+                                x:Name="dgResults"
+                                Grid.Row="1"
+                                Margin="0"
+                                AlternatingRowBackground="#FAFAFA"
+                                AutoGenerateColumns="False"
+                                Background="White"
+                                BorderThickness="0"
+                                CanUserAddRows="False"
+                                CanUserDeleteRows="False"
+                                FontFamily="Segoe UI"
+                                FontSize="13"
+                                Foreground="#333333"
+                                GridLinesVisibility="None"
+                                HeadersVisibility="Column"
+                                ItemsSource="{Binding ExtractedLeads}"
+                                RowBackground="White"
+                                SelectionMode="Single">
+                                <DataGrid.Resources>
+                                    <Style TargetType="ScrollBar">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="Width" Value="8" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ScrollBar">
+                                                    <Grid>
+                                                        <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                                            <Track.Thumb>
+                                                                <Thumb>
+                                                                    <Thumb.Template>
+                                                                        <ControlTemplate TargetType="Thumb">
+                                                                            <Border
+                                                                                Margin="2,0"
+                                                                                Background="#D0D0D0"
+                                                                                CornerRadius="4" />
+                                                                            <ControlTemplate.Triggers>
+                                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                                    <Setter Property="Background" Value="#B0B0B0" />
+                                                                                </Trigger>
+                                                                            </ControlTemplate.Triggers>
+                                                                        </ControlTemplate>
+                                                                    </Thumb.Template>
+                                                                </Thumb>
+                                                            </Track.Thumb>
+                                                        </Track>
+                                                    </Grid>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.ColumnHeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Background" Value="#FAFAFA" />
+                                        <Setter Property="Foreground" Value="#666666" />
+                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                        <Setter Property="Padding" Value="20,15" />
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="BorderBrush" Value="#F0F0F0" />
+                                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                    </Style>
+                                </DataGrid.ColumnHeaderStyle>
+                                <DataGrid.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="Padding" Value="20,12" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="DataGridCell">
+                                                    <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                                                        <ContentPresenter VerticalAlignment="Center" />
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#E8F4FF" />
+                                                <Setter Property="Foreground" Value="#333333" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGrid.CellStyle>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn
+                                        Width="280"
+                                        Binding="{Binding Name}"
+                                        Header="Nome" />
+                                    <DataGridTextColumn
+                                        Width="280"
+                                        Binding="{Binding Categories}"
+                                        Header="Categorias" />
+                                    <DataGridTemplateColumn Width="180" Header="Contatos">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                                    <TextBlock Margin="0,0,4,0" Visibility="{Binding Url, Converter={StaticResource NullToVisibilityConverter}}">
+                                                        <Hyperlink NavigateUri="{Binding Url}" RequestNavigate="Hyperlink_RequestNavigate">
+                                                            <Path
+                                                                Width="12"
+                                                                Height="12"
+                                                                Data="{StaticResource GlobeIconGeometry}"
+                                                                Fill="#000000"
+                                                                Stretch="Uniform"
+                                                                ToolTip="Url" />
+                                                        </Hyperlink>
+                                                    </TextBlock>
+                                                    <TextBlock Margin="0,0,4,0" Visibility="{Binding Facebook, Converter={StaticResource NullToVisibilityConverter}}">
+                                                        <Hyperlink NavigateUri="{Binding Facebook}" RequestNavigate="Hyperlink_RequestNavigate">
+                                                            <Path
+                                                                Width="12"
+                                                                Height="12"
+                                                                Data="{StaticResource FacebookIconGeometry}"
+                                                                Fill="#000000"
+                                                                Stretch="Uniform"
+                                                                ToolTip="Facebook" />
+                                                        </Hyperlink>
+                                                    </TextBlock>
+                                                    <TextBlock Margin="0,0,4,0" Visibility="{Binding Instagram, Converter={StaticResource NullToVisibilityConverter}}">
+                                                        <Hyperlink NavigateUri="{Binding Instagram}" RequestNavigate="Hyperlink_RequestNavigate">
+                                                            <Path
+                                                                Width="12"
+                                                                Height="12"
+                                                                Data="{StaticResource InstagramIconGeometry}"
+                                                                Fill="#000000"
+                                                                Stretch="Uniform"
+                                                                ToolTip="Instagram" />
+                                                        </Hyperlink>
+                                                    </TextBlock>
+                                                    <TextBlock Margin="0,0,4,0" Visibility="{Binding Youtube, Converter={StaticResource NullToVisibilityConverter}}">
+                                                        <Hyperlink NavigateUri="{Binding Youtube}" RequestNavigate="Hyperlink_RequestNavigate">
+                                                            <Path
+                                                                Width="12"
+                                                                Height="12"
+                                                                Data="{StaticResource YoutubeIconGeometry}"
+                                                                Fill="#000000"
+                                                                Stretch="Uniform"
+                                                                ToolTip="Youtube" />
+                                                        </Hyperlink>
+                                                    </TextBlock>
+                                                    <TextBlock Margin="0,0,4,0" Visibility="{Binding Twitter, Converter={StaticResource NullToVisibilityConverter}}">
+                                                        <Hyperlink NavigateUri="{Binding Twitter}" RequestNavigate="Hyperlink_RequestNavigate">
+                                                            <Path
+                                                                Width="12"
+                                                                Height="12"
+                                                                Data="{StaticResource TwitterIconGeometry}"
+                                                                Fill="#000000"
+                                                                Stretch="Uniform"
+                                                                ToolTip="Twitter" />
+                                                        </Hyperlink>
+                                                    </TextBlock>
+                                                    <TextBlock Margin="0,0,4,0" Visibility="{Binding Tiktok, Converter={StaticResource NullToVisibilityConverter}}">
+                                                        <Hyperlink NavigateUri="{Binding Tiktok}" RequestNavigate="Hyperlink_RequestNavigate">
+                                                            <Path
+                                                                Width="12"
+                                                                Height="12"
+                                                                Data="{StaticResource TikTokIconGeometry}"
+                                                                Fill="#000000"
+                                                                Stretch="Uniform"
+                                                                ToolTip="TikTok" />
+                                                        </Hyperlink>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Width="100" Header="Ações">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                                    <Button
+                                                        Margin="0,0,5,0"
+                                                        Command="{Binding DataContext.ViewSearchDetailsCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                                        CommandParameter="{Binding}"
+                                                        Content="Visualizar" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+            <Grid
+                x:Name="modalOverlay"
+                Background="#80000000"
+                SnapsToDevicePixels="True"
+                UseLayoutRounding="True"
+                Visibility="Collapsed">
+                <Border
+                    Width="480"
+                    MaxHeight="540"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="White"
+                    BorderBrush="#D0D0D0"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    SnapsToDevicePixels="True"
+                    UseLayoutRounding="True">
+                    <Grid
+                        Margin="25"
+                        SnapsToDevicePixels="True"
+                        UseLayoutRounding="True">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0" Margin="0,0,0,20">
+
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Foreground="#1A1A1A"
+                                Text="Parâmetros de Busca" />
+
+                            <Button
+                                Width="20"
+                                Height="20"
+                                Padding="0"
+                                HorizontalAlignment="Right"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Click="BtnCloseModal_Click"
+                                Cursor="Hand">
+                                <Path Data="{StaticResource CloseIconGeometry}" Style="{StaticResource DefaultIcon}" />
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#E5E5E5" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+                        <ScrollViewer
+                            Grid.Row="1"
+                            Margin="0,0,-12,0"
+                            Padding="0,0,12,0"
+                            UseLayoutRounding="True"
+                            VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <StackPanel Margin="0,0,0,18">
+                                    <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                        <Path Data="{StaticResource TagIconGeometry}" Style="{StaticResource DefaultIcon}" />
+                                        <TextBlock
+                                            FontSize="13"
+                                            FontWeight="SemiBold"
+                                            Foreground="#1A1A1A"
+                                            Text="Categoria" />
+                                        <TextBlock
+                                            FontSize="13"
+                                            FontWeight="SemiBold"
+                                            Foreground="#E74C3C"
+                                            Text=" *" />
+                                    </StackPanel>
+                                    <TextBox
+                                        x:Name="txtModalSearchTerms"
+                                        Height="85"
+                                        FontSize="13"
+                                        Foreground="#666666"
+                                        Style="{StaticResource MultiLineTextBox}"
+                                        Text="ex: restaurante, dentista, oficina&#x0a;ou insira um por linha" />
+                                </StackPanel>
+                                <StackPanel Margin="0,0,0,18">
+                                    <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                        <Path Data="{StaticResource MapMarkerIconGeometry}" Style="{StaticResource DefaultIcon}" />
+                                        <TextBlock
+                                            FontSize="13"
+                                            FontWeight="SemiBold"
+                                            Foreground="#1A1A1A"
+                                            Text="Localização" />
+                                        <TextBlock
+                                            FontSize="13"
+                                            FontWeight="SemiBold"
+                                            Foreground="#E74C3C"
+                                            Text=" *" />
+                                    </StackPanel>
+                                    <TextBox
+                                        x:Name="txtModalLocation"
+                                        FontSize="13"
+                                        Foreground="#666666"
+                                        Style="{StaticResource ModernTextBox}"
+                                        Text="ex: São Paulo, SP" />
+                                </StackPanel>
+                                <StackPanel Margin="0,0,0,0">
+                                    <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                        <Path Data="{StaticResource FileUploadIconGeometry}" Style="{StaticResource DefaultIcon}" />
+                                        <TextBlock
+                                            FontSize="13"
+                                            FontWeight="SemiBold"
+                                            Foreground="#1A1A1A"
+                                            Text="Ou Carregar Arquivo" />
+                                    </StackPanel>
+                                    <Border
+                                        Height="90"
+                                        Background="#FAFAFA"
+                                        BorderBrush="#D0D0D0"
+                                        BorderThickness="1.5"
+                                        CornerRadius="8"
+                                        UseLayoutRounding="True">
+                                        <Button
+                                            x:Name="btnUploadFile"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Click="BtnUploadFile_Click"
+                                            Cursor="Hand">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Grid Background="Transparent">
+                                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                            <Path Data="{StaticResource UploadIconGeometry}" Style="{StaticResource DefaultIcon}" />
+                                                            <TextBlock
+                                                                HorizontalAlignment="Center"
+                                                                FontSize="12"
+                                                                Foreground="#666666"
+                                                                Text="Clique para carregar .txt" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                    </Border>
+                                    <TextBlock
+                                        x:Name="txtFileName"
+                                        Margin="0,6,0,0"
+                                        FontSize="11"
+                                        Foreground="#666666"
+                                        Text=""
+                                        TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                        <Grid Grid.Row="2" Margin="0,20,0,0">
+                            <Button
+                                Height="42"
+                                HorizontalAlignment="Stretch"
+                                Click="BtnStartExtraction_Click"
+                                FontSize="14"
+                                Style="{StaticResource PrimaryButton}">
+                                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center" Text="Iniciar Extração" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

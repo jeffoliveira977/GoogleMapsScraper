@@ -8,20 +8,12 @@ using System.Threading.Tasks;
 namespace GoogleMapsScraper
 {
 
-    public class SocialNetwork
+    public class SocialNetwork(string name, string exclusion, Regex regex, Regex validatePattern)
     {
-        public string Name { get; set; }
-        public string Exclusion { get; set; }
-        public Regex Regex { get; set; }
-        public Regex ValidatePattern { get; set; }
-
-        public SocialNetwork(string name, string exclusion, Regex regex, Regex validatePattern)
-        {
-            Name = name;
-            Exclusion = exclusion;
-            Regex = regex;
-            ValidatePattern = validatePattern;
-        }
+        public string Name { get; set; } = name;
+        public string Exclusion { get; set; } = exclusion;
+        public Regex Regex { get; set; } = regex;
+        public Regex ValidatePattern { get; set; } = validatePattern;
 
         public bool ValidateUrl(string url)
         {

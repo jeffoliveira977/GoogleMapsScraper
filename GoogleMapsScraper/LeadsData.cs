@@ -4,7 +4,7 @@ using System;
 
 namespace GoogleMapsScraper
 {
-    public class PlaceResult : INotifyPropertyChanged
+    public class LeadsData : INotifyPropertyChanged
     {
         private string? _name;
         private string? _address;

@@ -182,6 +182,5 @@ namespace GoogleMapsScraper
             int digit2 = remainder < 2 ? 0 : 11 - remainder;
             return cnpj.EndsWith(digit1.ToString() + digit2.ToString());
         }
-
     }
 }

@@ -8,14 +8,11 @@ namespace GoogleMapsScraper
 {
     public class Search : INotifyPropertyChanged
     {
-        // 💡 Variável de suporte (backing field) para a propriedade Status
         private string? _status;
         private int _total_leads;
 
-        // 💡 Variável de suporte (backing field) para a propriedade IsCurrent
         private bool _isCurrent;
 
-        // O restante das propriedades automáticas
         [JsonPropertyName("search_term")]
         public string? SearchTerm { get; set; }
 
@@ -46,7 +43,6 @@ namespace GoogleMapsScraper
                     OnPropertyChanged();
                 }
             }
-
         }
 
         [JsonPropertyName("queue_position")]
@@ -65,7 +61,6 @@ namespace GoogleMapsScraper
                 }
             }
         }
-
         public bool IsCurrent
         {
             get => _isCurrent;
@@ -80,7 +75,6 @@ namespace GoogleMapsScraper
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
-
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

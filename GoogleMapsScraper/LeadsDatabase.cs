@@ -1,5 +1,4 @@
-﻿using MapsScraper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.Sqlite;
@@ -138,7 +137,6 @@ namespace GoogleMapsScraper
 
             const string sql = "SELECT * FROM leads WHERE searchId = @searchId";
 
-            // O Dapper faz o mapeamento automaticamente para a classe BusinessRecord
             var leads = conn.Query<BusinessRecord>(sql, new { searchId }).ToList();
 
             return leads;

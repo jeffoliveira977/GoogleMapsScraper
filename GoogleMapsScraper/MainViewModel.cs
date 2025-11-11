@@ -12,12 +12,11 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
 using System.Threading.Tasks;
-using System.Windows.Input; // Para comandos (opcional, mas recomendado)
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace GoogleMapsScraper
 {
-    // Implementa INotifyPropertyChanged para atualizar a UI quando as propriedades mudam
     public class MainViewModel : INotifyPropertyChanged
     {
         public ObservableCollection<Search> SearchLeads { get; set; } = [];
@@ -40,8 +39,7 @@ namespace GoogleMapsScraper
             set { _statusText = value; OnPropertyChanged(); }
         }
 
-        public ObservableCollection<PlaceResult> ExtractedLeads { get; set; } = [];
-        private ObservableCollection<LeadsData> LeadsData { get; set; } = [];
+        public ObservableCollection<LeadsData> ExtractedLeads { get; set; } = [];
 
         public MainViewModel()
         {
@@ -50,6 +48,7 @@ namespace GoogleMapsScraper
             InitializeData();
             LoadSearches();
         }
+
         private bool _isTableVisible = false;
         private bool _isCardsVisible = true;
 
@@ -123,19 +122,15 @@ namespace GoogleMapsScraper
 
         public void ExportData(string format)
         {
-            // 1. Validar e configurar o SaveFileDialog
             if (!TryConfigureSaveDialog(format, out var saveDialog, out var saveFormat))
             {
-                // Se o formato for inválido ou o diálogo for cancelado
                 return;
             }
 
-            // 2. Mostrar o diálogo e obter o caminho
             if (saveDialog.ShowDialog() == true)
             {
                 string filePath = saveDialog.FileName;
 
-                // 3. Executar a exportação específica para o formato escolhido
                 try
                 {
                     var dataToExport = this.ExtractedLeads.ToList();
@@ -152,26 +147,18 @@ namespace GoogleMapsScraper
                             ExportToJSON(dataToExport, filePath);
                             break;
                         default:
-                            // Tratar formato não suportado, embora TryConfigureSaveDialog já deva pegar isso.
                             break;
                     }
-                    // Opcional: Mostrar mensagem de sucesso (e.g., MessageBox.Show("Exportação concluída!"));
                 }
                 catch (Exception ex)
                 {
-                    // Opcional: Tratar e logar erros (e.g., MessageBox.Show($"Erro ao exportar: {ex.Message}"));
+ 
                 }
             }
         }
 
-        // --- Métodos Auxiliares e Enums ---
-
-        // Enum para mapear a string do formato para um tipo.
         private enum ExportFormat { Excel, CSV, JSON, Unknown }
 
-        /// <summary>
-        /// Tenta configurar o SaveFileDialog e retorna o formato de exportação.
-        /// </summary>
         private static bool TryConfigureSaveDialog(string format, out Microsoft.Win32.SaveFileDialog dialog, out ExportFormat exportFormat)
         {
             dialog = new Microsoft.Win32.SaveFileDialog();
@@ -185,7 +172,6 @@ namespace GoogleMapsScraper
                 _ => ExportFormat.Unknown
             };
 
-            // Simplificar a configuração do diálogo com switch expression
             (dialog.Filter, dialog.DefaultExt, dialog.FileName) = exportFormat switch
             {
                 ExportFormat.Excel => ("XLSX files (*.xlsx)|*.xlsx|All files (*.*)|*.*",
@@ -200,15 +186,12 @@ namespace GoogleMapsScraper
                                       ".json",
                                       $"GoogleMaps_Export_{timestamp}.json"),
 
-                _ => (null, null, null) // Retorno para formatos desconhecidos
+                _ => (null, null, null)
             };
 
             return exportFormat != ExportFormat.Unknown;
         }
 
-        /// <summary>
-        /// Lógica de exportação para Excel (usando Aspose.Cells).
-        /// </summary>
         private static void ExportToExcel<T>(List<T> data, string filePath)
         {
             var workbook = new Aspose.Cells.Workbook();
@@ -226,9 +209,6 @@ namespace GoogleMapsScraper
             workbook.Save(filePath, Aspose.Cells.SaveFormat.Xlsx);
         }
 
-        /// <summary>
-        /// Lógica de exportação para CSV (usando CsvHelper).
-        /// </summary>
         private static void ExportToCSV<T>(List<T> data, string filePath)
         {
             using var writer = new StreamWriter(filePath);
@@ -236,9 +216,6 @@ namespace GoogleMapsScraper
             csv.WriteRecords(data);
         }
 
-        /// <summary>
-        /// Lógica de exportação para JSON.
-        /// </summary>
         private static void ExportToJSON<T>(List<T> data, string filePath)
         {
             File.WriteAllText(filePath, JsonSerializer.Serialize(data, CachedJsonOptions));
@@ -250,7 +227,6 @@ namespace GoogleMapsScraper
             var searchId = Guid.NewGuid().ToString();
             var fullTerm = $"{searchTerm} {location}";
             var createdAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
-
 
             var data = new Search
             {
@@ -265,7 +241,6 @@ namespace GoogleMapsScraper
             };
 
             SearchLeads.Add(data);
-
             _searchQueue.Enqueue(data);
 
             TryProcessQueue();
@@ -286,10 +261,9 @@ namespace GoogleMapsScraper
             }
             _isProcessing = false;
         }
-
-        public static PlaceResult MapToPlaceResult(BusinessRecord record)
+        public static LeadsData MapToPlaceResult(BusinessRecord record)
         {
-            return new PlaceResult
+            return new LeadsData
             {
                 Name = record.Name,
                 Categories = record.Categories,
@@ -345,6 +319,4 @@ namespace GoogleMapsScraper
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
-
-  
 }

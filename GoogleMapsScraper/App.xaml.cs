@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace MapsScraper
+namespace GoogleMapsScraper
 {
     /// <summary>
     /// Interaction logic for App.xaml
