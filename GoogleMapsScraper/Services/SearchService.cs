@@ -1,4 +1,4 @@
-﻿using GoogleMapsScraper;
+﻿using GoogleMapsScraper.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace GoogleMapsScraper
+namespace GoogleMapsScraper.Services
 {
     internal class SearchService(string? currentSearchId = null)
     {
@@ -34,9 +34,6 @@ namespace GoogleMapsScraper
 
                 if (searches == null)
                     return [];
-
-                foreach (var search in searches)
-                    search.IsCurrent = search.SearchId == _currentSearchId;
 
                 return [.. searches.OrderByDescending(s => ParseDate(s.CreatedAt))];
             }

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace GoogleMapsScraper
+namespace GoogleMapsScraper.Utils
 {
     public static class TextDecoder
     {

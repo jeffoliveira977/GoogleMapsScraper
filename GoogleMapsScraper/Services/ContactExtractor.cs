@@ -1,4 +1,6 @@
 ﻿using GoogleMapsScraper;
+using GoogleMapsScraper.Services;
+using GoogleMapsScraper.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace GoogleMapsScraper
+namespace GoogleMapsScraper.Services
 {
     public static class ContactExtractor
     {
@@ -76,11 +78,11 @@ namespace GoogleMapsScraper
             if (string.IsNullOrEmpty(url)) return false;
 
             string cleanUrl = url.TrimStart('/');
-            if (Regex.IsMatch(cleanUrl, @"^(mailto:|mail:|#)") || Utils.HasNonWebExtension(cleanUrl)) return false;
+            if (Regex.IsMatch(cleanUrl, @"^(mailto:|mail:|#)") || Helper.HasNonWebExtension(cleanUrl)) return false;
 
             string allPatterns = string.Join("|", Patterns.Values.Select(p => $"({p})"));
             Regex regexKeywords = new Regex(allPatterns, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            if (regexKeywords.IsMatch(url) && regexKeywords.IsMatch(Utils.GetDomainName(url))) return true;
+            if (regexKeywords.IsMatch(url) && regexKeywords.IsMatch(Helper.GetDomainName(url))) return true;
 
             string pathname = url;
             string domain = url;
@@ -92,7 +94,7 @@ namespace GoogleMapsScraper
             }
             catch { return false; }
 
-            if (!Utils.IsValidPathname(pathname)) return false;
+            if (!Helper.IsValidPathname(pathname)) return false;
 
             KeyValuePair<string, Regex> found = default;
             bool foundMatch = false;
@@ -124,13 +126,13 @@ namespace GoogleMapsScraper
 
             if (lastTwo.Length == 2 && lastTwo.All(seg => regexKeywords.IsMatch(seg)))
             {
-                Utils.LogToFile("data/valid-urls.txt", pathname);
+                Helper.LogToFile("data/valid-urls.txt", pathname);
                 return true;
             }
 
             if (regexKeywords.Match(lastSegment).Success && regexKeywords.Match(lastSegment).Value == lastSegment)
             {
-                Utils.LogToFile("data/valid-urls.txt", pathname);
+                Helper.LogToFile("data/valid-urls.txt", pathname);
                 return true;
             }
 
@@ -173,13 +175,13 @@ namespace GoogleMapsScraper
             if (Regex.IsMatch(url, @"^mailto:|^mail:|^tel:|^#")) return null;
 
             url = new Uri(new Uri(baseUrl), url.Trim().Replace("\\", "")).ToString();
-            url = Utils.RemoveQueryAndFragment(url);
+            url = Helper.RemoveQueryAndFragment(url);
             url = url.Trim();
-            url = Utils.AddSlashToUrl(url);
+            url = Helper.AddSlashToUrl(url);
             url = url.TrimEnd('/');
-            url = Utils.RemoveWebExtension(url).ToLower();
+            url = Helper.RemoveWebExtension(url).ToLower();
 
-            if ((url.Contains("://") || url.Contains("www.")) && !url.Contains(Utils.GetDomainName(baseUrl))) return null;
+            if ((url.Contains("://") || url.Contains("www.")) && !url.Contains(Helper.GetDomainName(baseUrl))) return null;
 
             if (UrlMayContainContactInfo(url))
             { 
@@ -292,14 +294,15 @@ namespace GoogleMapsScraper
             { 
                 Console.WriteLine($"Link processado: {link}");
             }
-
-
+            
             if (validLinks.Count == 0)
                 return [];
 
             Console.WriteLine($"{validLinks.Count} links válidos encontrados");
 
+#pragma warning disable CS8620
             return await FetchEmailsFromLinks(validLinks);
+#pragma warning restore CS8620
         }
 
         private static List<string> ExtractSocialNetworkFromText(string text)
@@ -363,7 +366,7 @@ namespace GoogleMapsScraper
             if (match.Success)
             {
                 string cnpj = Regex.Replace(match.Value, @"\D", "");
-                if (Utils.IsValidCNPJ(cnpj))
+                if (Helper.IsValidCNPJ(cnpj))
                     return match.Value;
             }
             return null;

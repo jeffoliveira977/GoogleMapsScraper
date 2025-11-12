@@ -1,9 +1,10 @@
-﻿using System;
+﻿using GoogleMapsScraper.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 
-namespace GoogleMapsScraper
+namespace GoogleMapsScraper.Model
 {
         public class BusinessRecord
         {
@@ -42,7 +43,7 @@ namespace GoogleMapsScraper
 
                 if (!string.IsNullOrEmpty(Url))
                 {
-                    Url = Utils.RemoveQueryAndFragment(Url);
+                    Url = Helper.RemoveQueryAndFragment(Url);
                 }
 
                 Email = string.Empty;
@@ -100,7 +101,7 @@ namespace GoogleMapsScraper
                 }
             }
 
-            public Boolean IsValid()
+            public bool IsValid()
             {
                 return !string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Url);
             }

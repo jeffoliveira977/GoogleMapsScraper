@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
-using System.Runtime.CompilerServices; // Adicionado para simplificar OnPropertyChanged
+using System.Runtime.CompilerServices;
 
-namespace GoogleMapsScraper
+namespace GoogleMapsScraper.Model
 {
     public class Search : INotifyPropertyChanged
     {
         private string? _status;
         private int _total_leads;
-
-        private bool _isCurrent;
 
         [JsonPropertyName("search_term")]
         public string? SearchTerm { get; set; }
@@ -57,18 +55,6 @@ namespace GoogleMapsScraper
                 if (_status != value)
                 {
                     _status = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public bool IsCurrent
-        {
-            get => _isCurrent;
-            set
-            {
-                if (_isCurrent != value)
-                {
-                    _isCurrent = value;
                     OnPropertyChanged();
                 }
             }

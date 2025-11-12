@@ -6,9 +6,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace GoogleMapsScraper
+namespace GoogleMapsScraper.Utils
 {
-    public class Utils
+    public class Helper
     {
         private static readonly string[] WebExts =
         [
@@ -61,7 +61,7 @@ namespace GoogleMapsScraper
             }
         }
 
-        public static Boolean IsValidPathname(string pathname)
+        public static bool IsValidPathname(string pathname)
         {
             if (string.IsNullOrWhiteSpace(pathname))
                 return false;
@@ -120,7 +120,7 @@ namespace GoogleMapsScraper
                 return pathname;
 
             string[] parts = pathname.Split(['#'], 2);
-            parts[0] = Utils.WebExtPattern.Replace(parts[0], "", 1);
+            parts[0] = WebExtPattern.Replace(parts[0], "", 1);
 
             return string.Join("#", parts);
         }
@@ -132,7 +132,7 @@ namespace GoogleMapsScraper
 
             string cleanPath = pathname.Split(['?', '#'], 2)[0];
 
-            Match anyExtMatch = Utils.AnyExtPattern.Match(cleanPath);
+            Match anyExtMatch = AnyExtPattern.Match(cleanPath);
             if (anyExtMatch.Success)
             {
                 return !WebExtPattern.IsMatch(cleanPath);
@@ -156,7 +156,7 @@ namespace GoogleMapsScraper
             return result;
         }
 
-        public static Boolean IsValidCNPJ(string cnpj)
+        public static bool IsValidCNPJ(string cnpj)
         {
             cnpj = Regex.Replace(cnpj, @"[^\d]", "");
             if (cnpj.Length != 14)

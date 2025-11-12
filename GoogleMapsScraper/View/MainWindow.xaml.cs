@@ -3,7 +3,6 @@ using System.IO;
 using CsvHelper;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Wordprocessing;
-using GoogleMapsScraper;
 using Microsoft.Playwright;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -25,6 +24,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using GoogleMapsScraper.ViewModel;
 
 namespace GoogleMapsScraper
 {
@@ -42,7 +42,7 @@ namespace GoogleMapsScraper
            
             InitializeComponent();
 
-            ViewModel = new GoogleMapsScraper.MainViewModel();
+            ViewModel = new GoogleMapsScraper.ViewModel.MainViewModel();
             this.DataContext = ViewModel;
 
             _ = InitializePlaywrightAsync();
@@ -50,10 +50,8 @@ namespace GoogleMapsScraper
 
         private async Task InitializePlaywrightAsync()
         {
-            string playwrightInstallationPath =
-                System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ms-playwright");
 
-            if (Directory.Exists(playwrightInstallationPath))
+            if (IsPlaywrightInstalled())
             {
                 return;
             }
@@ -69,7 +67,7 @@ namespace GoogleMapsScraper
             await RunPlaywrightInstallAsync();
 
             // Verificar resultado
-            if (Directory.Exists(playwrightInstallationPath))
+            if (IsPlaywrightInstalled())
             {
                 ShowPopupSuccess(
                     "Instalação Concluída",
@@ -82,6 +80,26 @@ namespace GoogleMapsScraper
                     "Erro na Instalação",
                     "A instalação falhou. Verifique os logs do PowerShell e tente novamente."
                 );
+            }
+        }
+        public static bool IsPlaywrightInstalled()
+        {
+            string playwrightRootPath =
+                System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ms-playwright");
+
+            const string executableName = "headless_shell.exe";
+
+            try
+            {
+                return Directory.EnumerateFiles(playwrightRootPath, executableName, SearchOption.AllDirectories).Any();
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 
@@ -160,18 +178,17 @@ namespace GoogleMapsScraper
             PopupIconRotation.Angle = 0;
         }
 
-        // Fechar popup
         private void PopupOkButton_Click(object sender, RoutedEventArgs e)
         {
             InstallPopup.Visibility = Visibility.Collapsed;
         }
 
-        private Task RunPlaywrightInstallAsync()
+        private static Task RunPlaywrightInstallAsync()
         {
-            return Task.Run(static () =>
+
+            return Task.Run(() =>
             {
                 string playwrightScriptPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "playwright.ps1");
-
                 if (!File.Exists(playwrightScriptPath))
                 {
                     throw new FileNotFoundException($"Script não encontrado: {playwrightScriptPath}");
@@ -182,34 +199,37 @@ namespace GoogleMapsScraper
                     FileName = "powershell.exe",
                     Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{playwrightScriptPath}\" install",
                     UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    CreateNoWindow = false,
+                    RedirectStandardOutput = false,
+                    RedirectStandardError = false
                 };
 
                 using var process = Process.Start(startInfo) ?? throw new Exception($"Erro ao executar o powershell.");
 
-                bool finished = process.WaitForExit(600000);
+                TimeSpan totalTimeout = TimeSpan.FromMinutes(10);
+                TimeSpan checkInterval = TimeSpan.FromSeconds(5);
+                DateTime startTime = DateTime.Now;
+                bool success = false;
 
-                if (!finished)
+                while (DateTime.Now - startTime < totalTimeout)
                 {
-                    process.Kill();
-                    throw new TimeoutException("Instalação excedeu o tempo limite de 10 minutos");
+                    if (process.HasExited)
+                    {
+                        break;
+                    }
+
+                    Thread.Sleep(checkInterval);
                 }
 
-                string output = process.StandardOutput.ReadToEnd();
-                string error = process.StandardError.ReadToEnd();
-
-                if (!string.IsNullOrEmpty(output))
-                    Console.WriteLine($"Output: {output}");
-
-                if (!string.IsNullOrEmpty(error))
-                    Console.WriteLine($"Error: {error}");
-
-                if (process.ExitCode != 0)
+                if (success && !process.HasExited)
                 {
-                    throw new Exception($"Instalação falhou com código: {process.ExitCode}");
+                    process.Kill(true);
+                    Console.WriteLine("Instalação verificada. Processo PowerShell encerrado.");
+                    return;
                 }
+
+                process.WaitForExit(5000);
+
             });
         }
 
@@ -262,9 +282,7 @@ namespace GoogleMapsScraper
             if (sender is Button button && button.ContextMenu is ContextMenu menu)
             {
                 menu.PlacementTarget = button;
-
                 menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-
                 menu.IsOpen = true;
             }
         }
@@ -276,7 +294,8 @@ namespace GoogleMapsScraper
                 string? format = menuItem.Tag?.ToString();
 
                 MessageBox.Show($"Iniciando exportação para {format}...", "Exportar");
-                ViewModel.ExportData(format);
+        
+                ViewModel.ExportData(format?? "");
             }
         }
 

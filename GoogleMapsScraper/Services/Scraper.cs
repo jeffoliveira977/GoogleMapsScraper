@@ -1,4 +1,5 @@
 ﻿using CsvHelper;
+using GoogleMapsScraper.Model;
 using Microsoft.Playwright;
 using System;
 using System.Collections.Generic;
@@ -12,9 +13,9 @@ using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using System.Threading.Tasks;
 using System.Windows.Media.Media3D;
-using static GoogleMapsScraper.BusinessRecord;
+using static GoogleMapsScraper.Model.BusinessRecord;
 
-namespace GoogleMapsScraper
+namespace GoogleMapsScraper.Services
 {
     public class Scraper(string query)
     {

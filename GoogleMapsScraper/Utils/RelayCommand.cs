@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace GoogleMapsScraper
+namespace GoogleMapsScraper.Utils
 {
     // Source - https://stackoverflow.com/a
     // Posted by Rohit Vats, modified by community. See post 'Timeline' for change history

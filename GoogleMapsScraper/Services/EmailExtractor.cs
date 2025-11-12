@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GoogleMapsScraper.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace GoogleMapsScraper
+namespace GoogleMapsScraper.Services
 {
     class EmailExtractor
     {
@@ -50,7 +51,7 @@ namespace GoogleMapsScraper
 
         private static string DecodeCloudflareEmail(string email)
         {
-            if (String.IsNullOrEmpty(email))
+            if (string.IsNullOrEmpty(email))
                 throw new Exception("Cannot decode None value. Please provide a valid encoded email string.");
 
             if (email.Length < 2)
@@ -166,7 +167,7 @@ namespace GoogleMapsScraper
 
             if (!string.IsNullOrEmpty(targetDomain))
             {
-                string targetBase = Utils.RemoveTLD(targetDomain);
+                string targetBase = Helper.RemoveTLD(targetDomain);
                 return email.Contains(targetBase);
             }
 

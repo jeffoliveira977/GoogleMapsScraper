@@ -7,8 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Dapper;
+using GoogleMapsScraper.Model;
 
-namespace GoogleMapsScraper
+namespace GoogleMapsScraper.Services
 {
     class LeadsDatabase
     {
@@ -16,8 +17,8 @@ namespace GoogleMapsScraper
 
         public LeadsDatabase(string dbName = "data\\leads.db")
         {
-            string curDir = System.IO.Directory.GetCurrentDirectory();
-            var fullPath = System.IO.Path.Combine(curDir, dbName);
+            string curDir = Directory.GetCurrentDirectory();
+            var fullPath = Path.Combine(curDir, dbName);
 
             Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
 

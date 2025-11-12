@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace GoogleMapsScraper
+namespace GoogleMapsScraper.Utils
 {
 
     public class SocialNetwork(string name, string exclusion, Regex regex, Regex validatePattern)
