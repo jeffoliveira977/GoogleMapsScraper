@@ -111,7 +111,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <!--  Secondary Button  -->
+  
     <Style
         x:Key="SecondaryButton"
         BasedOn="{StaticResource PrimaryButton}"

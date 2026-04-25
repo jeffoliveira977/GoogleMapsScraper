@@ -121,7 +121,7 @@ namespace GoogleMapsScraper.Services
                 cmd.Parameters.AddWithValue("@local_fulladdr", r.LocalFullAddr ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@created_at", r.CreatedAt ?? DateTime.UtcNow.ToString("s"));
                 cmd.Parameters.AddWithValue("@processed", r.Processed ? 1 : 0);
-                cmd.Parameters.AddWithValue("@key", r.Key?.ToString() ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@key", r.Key ?? (object)DBNull.Value);
 
                 await cmd.ExecuteNonQueryAsync();
             }
@@ -142,5 +142,39 @@ namespace GoogleMapsScraper.Services
 
             return leads;
         }
+
+        public void DeleteBySearchId(string searchId)
+        {
+            if (string.IsNullOrWhiteSpace(searchId))
+            {
+                Console.WriteLine("⚠️ searchId inválido para deletar.");
+                return;
+            }
+
+            try
+            {
+                using var conn = new SqliteConnection(_connectionString);
+                conn.Open();
+
+                using var tx =  conn.BeginTransaction();
+
+                const string deleteSql = "DELETE FROM leads WHERE searchId = @searchId;";
+
+                 conn.Execute(
+                    deleteSql,
+                    new { searchId },
+                    transaction: (SqliteTransaction)tx
+                );
+
+                tx.Commit();
+
+                Console.WriteLine($"🗑️ Leads com searchId '{searchId}' deletados com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Erro ao deletar leads da busca '{searchId}': {ex.Message}");
+            }
+        }
+
     }
 }

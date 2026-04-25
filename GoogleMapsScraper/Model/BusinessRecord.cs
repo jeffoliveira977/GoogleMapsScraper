@@ -1,8 +1,11 @@
 ﻿using GoogleMapsScraper.Utils;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Unicode;
 
 namespace GoogleMapsScraper.Model
 {
@@ -27,9 +30,9 @@ namespace GoogleMapsScraper.Model
             public string Cnpj { get; set; } = "";
             public string CreatedAt { get; set; } = "";
             public bool Processed { get; set; } = false;
-            public object? Key { get; set; }
+            public string? Key { get; set; } = "";
 
-            public BusinessRecord()
+        public BusinessRecord()
             {
            
             }
@@ -79,8 +82,8 @@ namespace GoogleMapsScraper.Model
                 Cnpj = string.Empty;
                 CreatedAt = string.Empty;
                 Processed = false;
-                Key = SafeGet(data, 78);
-            }
+                Key = SafeGet(data, 78).ToString() ?? string.Empty;
+        }
 
             private static JsonElement SafeGet(JsonElement data, params int[] indices)
             {

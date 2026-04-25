@@ -2,6 +2,10 @@
 using Aspose.Cells.Utility;
 using CsvHelper;
 using DocumentFormat.OpenXml.InkML;
+using GoogleMapsScraper.Mapper;
+using GoogleMapsScraper.Model;
+using GoogleMapsScraper.Services;
+using GoogleMapsScraper.Utils;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -12,29 +16,116 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
-using GoogleMapsScraper.Mapper;
-using GoogleMapsScraper.Model;
-using GoogleMapsScraper.Utils;
-using GoogleMapsScraper.Services;
 
 namespace GoogleMapsScraper.ViewModel
 {
+    public enum PopupStateType
+    {
+        Info,     // Cor/Ícone Azul (Instalação)
+        Success,  // Cor/Ícone Verde
+        Error,    // Cor/Ícone Vermelho
+        Hidden
+    }
+
     public class MainViewModel : INotifyPropertyChanged
     {
-        public ObservableCollection<Search> SearchLeads { get; set; } = [];
+        private PopupStateType _currentPopupState = PopupStateType.Hidden;
 
-        private readonly SearchService _service = new(currentSearchId: "...");
-        private readonly Queue<Search> _searchQueue = new();
+        public PopupStateType CurrentPopupState
+        {
+            get => _currentPopupState;
+            set
+            {
+                if (_currentPopupState != value)
+                {
+                    _currentPopupState = value;
+                    OnPropertyChanged(nameof(CurrentPopupState));
+                }
+            }
+        }
+
+        private bool _isPopupVisible = false;
+
+        public bool IsPopupVisible
+        {
+            get => _isPopupVisible;
+            set
+            {
+                if (_isPopupVisible != value)
+                {
+                    _isPopupVisible = value;
+                    OnPropertyChanged(nameof(IsPopupVisible));
+                }
+            }
+        }
+
+        private bool _isModalVisible = false;
+        public bool IsModalVisible
+        {
+            get => _isModalVisible;
+            set
+            {
+                _isModalVisible = value;
+                OnPropertyChanged(nameof(IsModalVisible));
+            }
+        }
+
+        private string _popupTitle = string.Empty;
+        public string PopupTitle
+        {
+            get => _popupTitle;
+            set
+            {
+                _popupTitle = value;
+                OnPropertyChanged(nameof(PopupTitle));
+            }
+        }
+
+        private string _popupMessage = string.Empty;
+        public string PopupMessage
+        {
+            get => _popupMessage;
+            set
+            {
+                _popupMessage = value;
+                OnPropertyChanged(nameof(PopupMessage));
+            }
+        }
+
+        private bool _isProgressVisible;
+        public bool IsProgressVisible
+        {
+            get => _isProgressVisible;
+            set
+            {
+                _isProgressVisible = value;
+                OnPropertyChanged(nameof(IsProgressVisible));
+            }
+        }
+
+        private bool _isButtonVisible;
+        public bool IsButtonVisible
+        {
+            get => _isButtonVisible;
+            set
+            {
+                _isButtonVisible = value;
+                OnPropertyChanged(nameof(IsButtonVisible));
+            }
+        }
+
         private readonly LeadsDatabase _database = new ();
         public ICommand ViewSearchDetailsCommand { get; }
-        public ICommand BackToCardsCommand { get; }
-        private bool _isProcessing = false;
+        public ICommand StartExtractionCommand { get; }
+        public ICommand ExportCommand { get; }
+        public ICommand ClearCommand { get; }
 
         public string SearchTermsInput { get; set; } = "";
         public string LocationInput { get; set; } = "";
-
+        public string SelectedSearchId { get; set; } = "";
         private string _statusText = "Status: Aguardando busca...";
 
         public string StatusText
@@ -50,13 +141,14 @@ namespace GoogleMapsScraper.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public ObservableCollection<LeadsData> ExtractedLeads { get; set; } = [];
-
+        public SearchProcessingViewModel SearchProcessingViewModel { get; }
         public MainViewModel()
         {
-            ViewSearchDetailsCommand = new GoogleMapsScraper.Utils.RelayCommand(ViewSearchDetails);
-            BackToCardsCommand = new GoogleMapsScraper.Utils.RelayCommand(ExecuteBackToCards);
-            LoadSearches();
+            SearchProcessingViewModel = new SearchProcessingViewModel();
+            ViewSearchDetailsCommand = new RelayCommand(ViewSearchDetails);
+            StartExtractionCommand = new RelayCommand(ExecuteStartExtraction, CanExecuteStartExtraction);
+            ClearCommand = new RelayCommand(ClearSelectedSearch);
+            ExportCommand = new RelayCommand(ExecuteExport);
         }
 
         private bool _isTableVisible = false;
@@ -77,16 +169,72 @@ namespace GoogleMapsScraper.ViewModel
                 OnPropertyChanged(); }
         }
 
-        private void LoadSearches()
+        public void ShowPopupMessage(string title, string message, bool showProgress, bool isButtonVisible, PopupStateType state)
         {
-            var searches = _service.GetSearches();
- 
-            SearchLeads.Clear();
-            
-            foreach (var search in searches)
-            {
-                SearchLeads.Add(search);
-            }
+            PopupTitle = title;
+            PopupMessage = message;
+            IsProgressVisible = showProgress;
+            IsButtonVisible = isButtonVisible;
+            CurrentPopupState = state;
+
+            IsPopupVisible = true;
+        }
+
+        public void HidePopupMessage()
+        {
+            IsPopupVisible = false;
+            IsProgressVisible = false;
+            CurrentPopupState = PopupStateType.Hidden;
+        }
+  
+
+        public void ShowInfoState(string title, string message, bool showProgress = false, bool isButtonVisible = false)
+        {
+            ShowPopupMessage(title, message, showProgress, isButtonVisible, PopupStateType.Info);
+        }
+
+        public void ShowSuccessState(string title, string message)
+        {
+            ShowPopupMessage(title, message, false, false, PopupStateType.Success);
+        }
+
+        public void ShowErrorState(string title, string message)
+        {
+            ShowPopupMessage(title, message, false, false, PopupStateType.Error);
+        }
+
+        public void ClearSelectedSearch(object? parameter)
+        {
+            if (string.IsNullOrEmpty(SelectedSearchId))
+                return;
+
+            _database.DeleteBySearchId(SelectedSearchId);
+
+            SearchProcessingViewModel.ExtractedLeads.Clear();
+        }
+
+        private void ExecuteExport(object? parameter)
+        {
+            var format = parameter?.ToString();
+            if (string.IsNullOrWhiteSpace(format))
+                return;
+
+            ExportService.ExportData(format, [..SearchProcessingViewModel.ExtractedLeads]);
+        }
+
+        private bool CanExecuteStartExtraction(object? parameter)
+        {
+            bool termsValid = !string.IsNullOrWhiteSpace(SearchTermsInput);
+            bool locationValid = !string.IsNullOrWhiteSpace(LocationInput);
+
+            return termsValid && locationValid;
+        }
+
+        private void ExecuteStartExtraction(object? parameter)
+        {
+            IsModalVisible = false;
+
+            SearchProcessingViewModel.EnqueueNewSearch(SearchTermsInput, LocationInput);
         }
 
         private void ViewSearchDetails(object? parameter)
@@ -94,99 +242,20 @@ namespace GoogleMapsScraper.ViewModel
             IsTableVisible = true;
             IsCardsVisible = false;
 
-            if (parameter is Search clickedSearch)
+            if (parameter is Search search)
             {
-                if (clickedSearch.SearchId == null) return;
+                if (search.SearchId == null) return;
 
-                var records = _database.GetLeadsBySearchId(clickedSearch.SearchId);
-               
-                ExtractedLeads.Clear();
+                SelectedSearchId = search.SearchId;
+                var records = _database.GetLeadsBySearchId(search.SearchId);
 
-                foreach (var record in records)
-                {
-                    ExtractedLeads.Add(DataMapper.MapToLeadsData(record));                 
-                }
+                SearchProcessingViewModel.ExtractedLeads.Clear();
 
-                StatusText = $"Detalhes da busca: {clickedSearch.FullTerm}";
-            }
-        }
-        private void ExecuteBackToCards(object? parameter)
-        {
-            IsTableVisible = false; 
-            IsCardsVisible = true; 
-        }
-        public void ExportData(string format)
-        {
-            ExportService.ExportData(format, [.. this.ExtractedLeads]);
-        }
-        
-        public void StartSearch(string searchTerm, string location)
-        {
-           
-            var searchId = Guid.NewGuid().ToString();
-            var fullTerm = $"{searchTerm} {location}";
-            var createdAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+                var mappedLeads = records.Select(record => DataMapper.MapToLeadsData(record)).ToList();
+                SearchProcessingViewModel.AddLeadsToExtracted(mappedLeads);
 
-            var data = new Search
-            {
-                SearchTerm = searchTerm,
-                Location = location,
-                FullTerm = fullTerm,
-                SearchId = searchId,
-                Status = "Waiting",
-                CreatedAt = createdAt,
-                StartedAt = createdAt,
-                TotalLeads = 0
-            };
-
-            SearchLeads.Add(data);
-            _searchQueue.Enqueue(data);
-
-            TryProcessQueue();
-        }
-
-        private async void TryProcessQueue()
-        {
-            if (_isProcessing) return;
-
-            _isProcessing = true;
-            while (_searchQueue.Count > 0)
-            {
-                var currentSearch = _searchQueue.Dequeue();
-                currentSearch.Status = "Running";
-
-                await ProcessSingleSearch(currentSearch);
-            }
-            _isProcessing = false;
-        }
-
-        private async Task ProcessSingleSearch(Search data)
-        {
-            try
-            {
-                var scraper = new Scraper($"{data.SearchTerm} {data.Location}");
-                var records = await scraper.RunAsync();
-
-                records.ForEach(record => record.SearchId = data.SearchId);
-
-                await _database.SaveRecordsAsync(records);
-
-                data.Status = "Completed";
-                data.TotalLeads = records.Count;
-                //data.FinishedAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"); // Adicione um campo para hora de fim
-
-                _service.SaveTofile(data);
-
-                ExtractedLeads.Clear();
-
-                foreach (var record in records)
-                {
-                    ExtractedLeads.Add(DataMapper.MapToLeadsData(record));
-                }
-            }
-            catch (Exception)
-            {
-                data.Status = "Failed";
+                Console.WriteLine(SearchProcessingViewModel.ExtractedLeads);
+                StatusText = $"Detalhes da busca: {search.FullTerm}";
             }
         }
     }

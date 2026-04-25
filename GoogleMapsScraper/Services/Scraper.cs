@@ -22,6 +22,7 @@ namespace GoogleMapsScraper.Services
         private readonly string _query = query;
         private IBrowser? _browser;
         private IPage? _page;
+        private JsonElement parsedJson;
         private readonly List<BusinessRecord> _records = [];
 
         public async Task<List<BusinessRecord>> RunAsync()
@@ -81,6 +82,7 @@ namespace GoogleMapsScraper.Services
 
             return _records;
         }
+
         async static Task ProcessRecordAsync(BusinessRecord record, SemaphoreSlim semaphore)
         {
             await semaphore.WaitAsync();
@@ -133,18 +135,28 @@ namespace GoogleMapsScraper.Services
                 try
                 {
                     string data = await response.TextAsync();
-                    var parsedJson = JsonSerializer.Deserialize<JsonElement>(data[..^6]);
-                    var d = parsedJson.GetProperty("d").GetString();
 
-                    if (d == null) return;
+                    int startIndex = data.IndexOf('[');
+                    if (startIndex == -1) return;
+                    var cleanData = data[startIndex..];
 
-                    var recordsData = JsonSerializer.Deserialize<JsonElement>(d[4..]);
+                    using JsonDocument doc = JsonDocument.Parse(cleanData);
+                    JsonElement root = doc.RootElement;
 
-                    var newRecords = ExtractBusiness(recordsData[64]);
-                    _records.AddRange(newRecords);
+                    if (root.ValueKind == JsonValueKind.Array)
+                    {
+                        var recordsData = root;
+
+                        if (recordsData.GetArrayLength() > 64)
+                        {
+                            var newRecords = ExtractBusiness(recordsData[64]);
+                            _records.AddRange(newRecords);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
+                    Utils.Helper.LogToFile("logs/errors.log", $"Erro: {ex.Message}");
                     Console.WriteLine($"Erro ao processar resposta: {ex.Message}");
                 }
             }

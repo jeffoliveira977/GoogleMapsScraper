@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -32,10 +34,12 @@ namespace GoogleMapsScraper.Utils
         {
             try
             {
-                using (var writer = System.IO.File.AppendText(filePath))
-                {
-                    writer.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
-                }
+                string? directory = Path.GetDirectoryName(filePath);
+                if (!string.IsNullOrEmpty(directory)) Directory.CreateDirectory(directory);
+
+                string logLine = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}{Environment.NewLine}";
+
+                File.AppendAllText(filePath, logLine);
             }
             catch (Exception ex)
             {

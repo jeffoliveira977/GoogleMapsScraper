@@ -10,10 +10,9 @@ using System.Threading.Tasks;
 
 namespace GoogleMapsScraper.Services
 {
-    internal class SearchService(string? currentSearchId = null)
+    internal class SearchService()
     {
         private readonly string _filePath = "data/searchs.json";
-        private readonly string _currentSearchId = currentSearchId?? "";
         private readonly JsonSerializerOptions jsonSerializerOptions = new()
         {
             WriteIndented = true
