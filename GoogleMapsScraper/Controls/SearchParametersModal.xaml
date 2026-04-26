@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:GoogleMapsScraper.Controls" 
              xmlns:viewmodel="clr-namespace:GoogleMapsScraper.ViewModel" 
-             xmlns:converters="clr-namespace:GoogleMapsScraper.Converters"
+             xmlns:converters="clr-namespace:GoogleMapsScraper.Converters" xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              d:DataContext="{d:DesignInstance Type=viewmodel:MainViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="650" d:DesignWidth="800">
@@ -13,177 +13,198 @@
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </UserControl.Resources>
-    
+
     <Grid
-      x:Name="modalOverlay"
-      Background="#80000000"
-      SnapsToDevicePixels="True"
-      UseLayoutRounding="True"
-      Visibility="{Binding IsModalVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+        x:Name="modalOverlay"
+        Background="#99000000"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True"
+        Visibility="{Binding IsModalVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+
         <Border
-          Width="480"
-          MaxHeight="540"
-          HorizontalAlignment="Center"
-          VerticalAlignment="Center"
-          Background="White"
-          BorderBrush="#D0D0D0"
-          BorderThickness="1"
-          CornerRadius="12"
-          SnapsToDevicePixels="True"
-          UseLayoutRounding="True">
-            <Grid
-              Margin="25"
-              SnapsToDevicePixels="True"
-              UseLayoutRounding="True">
+            Width="480"
+            MaxHeight="540"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="#1a1a1a"
+            BorderBrush="#2e2e2e"
+            BorderThickness="1"
+            CornerRadius="14"
+            SnapsToDevicePixels="True"
+            UseLayoutRounding="True">
+
+            <Grid Margin="0" SnapsToDevicePixels="True" UseLayoutRounding="True">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Grid Grid.Row="0" Margin="0,0,0,20">
 
-                    <TextBlock
-                      HorizontalAlignment="Center"
-                      FontSize="18"
-                      FontWeight="SemiBold"
-                      Foreground="#1A1A1A"
-                      Text="Parâmetros de Busca" />
+                <!-- Header -->
+                <Border
+                    Grid.Row="0"
+                    Padding="24,20"
+                    BorderBrush="#2a2a2a"
+                    BorderThickness="0,0,0,1">
+                    <Grid>
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Foreground="#F0F0F0"
+                                Text="Nova Busca" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="12"
+                                Foreground="#666666"
+                                Margin="0,3,0,0"
+                                Text="Configure os parâmetros de extração" />
+                        </StackPanel>
+                        <Button
+                            Width="28"
+                            Height="28"
+                            Padding="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Click="CloseModal_Click"
+                            Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border
+                                        x:Name="Bd"
+                                        Background="#252525"
+                                        BorderBrush="#333333"
+                                        BorderThickness="1"
+                                        CornerRadius="6">
+                                        <Path
+                                            Data="{StaticResource CloseIconGeometry}"
+                                            Fill="#888888"
+                                            Width="10"
+                                            Height="10"
+                                            Stretch="Uniform"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#2e2e2e" />
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#444444" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                </Border>
 
-                    <Button
-                      Width="20"
-                      Height="20"
-                      Padding="0"
-                      HorizontalAlignment="Right"
-                      Background="Transparent"
-                      BorderThickness="0"
-                      Click="CloseModal_Click"
-                      Cursor="Hand">
-                        <Path Data="{StaticResource CloseIconGeometry}" Style="{StaticResource DefaultIcon}" />
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}" CornerRadius="6">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#E5E5E5" />
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-                </Grid>
+                <!-- Body -->
                 <ScrollViewer
-                  Grid.Row="1"
-                  Margin="0,0,-12,0"
-                  Padding="0,0,12,0"
-                  UseLayoutRounding="True"
-                  VerticalScrollBarVisibility="Auto">
+                    Grid.Row="1"
+                    Margin="0"
+                    Padding="24,20,24,20"
+                    VerticalScrollBarVisibility="Auto"
+                    UseLayoutRounding="True">
                     <StackPanel>
-                        <StackPanel Margin="0,0,0,18">
+
+                        <!-- Termo de busca -->
+                        <StackPanel Margin="0,0,0,20">
                             <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
                                 <Path Data="{StaticResource TagIconGeometry}" Style="{StaticResource DefaultIcon}" />
                                 <TextBlock
-                                  FontSize="13"
-                                  FontWeight="SemiBold"
-                                  Foreground="#1A1A1A"
-                                  Text="Categoria" />
-                                <TextBlock
-                                  FontSize="13"
-                                  FontWeight="SemiBold"
-                                  Foreground="#E74C3C"
-                                  Text=" *" />
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="#999999"
+                                    Text="TERMO DE BUSCA" />
                             </StackPanel>
                             <TextBox
-                              x:Name="txtModalSearchTerms"
-                              Height="85"
-                              FontSize="13"
-                              Foreground="#666666"
-                              Style="{StaticResource MultiLineTextBox}"
-                              Text="{Binding SearchTermsInput, UpdateSourceTrigger=PropertyChanged}"/>
+                                x:Name="txtModalSearchTerms"
+                                FontSize="13"                       
+                                Text="{Binding SearchTermsInput, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock
+                                Text="Use o mesmo formato que você usaria no Google Maps"
+                                FontSize="11"
+                                Foreground="#555555"
+                                Margin="0,5,0,0" />
                         </StackPanel>
-                        <StackPanel Margin="0,0,0,18">
-                            <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
-                                <Path Data="{StaticResource MapMarkerIconGeometry}" Style="{StaticResource DefaultIcon}" />
-                                <TextBlock
-                                  FontSize="13"
-                                  FontWeight="SemiBold"
-                                  Foreground="#1A1A1A"
-                                  Text="Localização" />
-                                <TextBlock
-                                  FontSize="13"
-                                  FontWeight="SemiBold"
-                                  Foreground="#E74C3C"
-                                  Text=" *" />
-                            </StackPanel>
-                            <TextBox
-                              x:Name="txtModalLocation"
-                              FontSize="13"
-                              Foreground="#666666"
-                              Style="{StaticResource ModernTextBox}"
-                              Text="{Binding LocationInput, UpdateSourceTrigger=PropertyChanged}"
-                              />
-                        </StackPanel>
+
+                        <Border Height="1" Background="#2a2a2a" Margin="0,0,0,20" />
+
                         <StackPanel Margin="0,0,0,0">
                             <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
                                 <Path Data="{StaticResource FileUploadIconGeometry}" Style="{StaticResource DefaultIcon}" />
                                 <TextBlock
-                                  FontSize="13"
-                                  FontWeight="SemiBold"
-                                  Foreground="#1A1A1A"
-                                  Text="Ou Carregar Arquivo" />
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="#999999"
+                                    Text="OU CARREGAR ARQUIVO" />
                             </StackPanel>
+
                             <Border
-                              Height="90"
-                              Background="#FAFAFA"
-                              BorderBrush="#D0D0D0"
-                              BorderThickness="1.5"
-                              CornerRadius="8"
-                              UseLayoutRounding="True">
-                                <Button
-                                  x:Name="btnUploadFile"
-                                  Background="Transparent"
-                                  BorderThickness="0"
-                                  Click="BtnUploadFile_Click"
-                                  Cursor="Hand">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <Grid Background="Transparent">
-                                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <Path Data="{StaticResource UploadIconGeometry}" Style="{StaticResource DefaultIcon}" />
-                                                    <TextBlock
-                                                      HorizontalAlignment="Center"
-                                                      FontSize="12"
-                                                      Foreground="#666666"
-                                                      Text="Clique para carregar .txt" />
-                                                </StackPanel>
-                                            </Grid>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                </Button>
+                                x:Name="UploadArea"
+                                Height="90"
+                                Background="#141414"
+                                BorderBrush="#333333"
+                                BorderThickness="1.5"
+                                CornerRadius="8"
+                                Cursor="Hand"
+                                MouseLeftButtonUp="BtnUploadFile_Click">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="BorderBrush" Value="#60cdff" />
+                                                <Setter Property="Background" Value="#0d1f2e" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path
+                                            Data="{StaticResource UploadIconGeometry}"
+                                            Fill="#444444"
+                                            Width="18"
+                                            Height="18"
+                                            Stretch="Uniform"
+                                            HorizontalAlignment="Center"
+                                            Margin="0,0,0,6" />
+                                    <TextBlock
+                                            HorizontalAlignment="Center"
+                                            FontSize="12"
+                                            Foreground="#555555"
+                                            Text="Clique para carregar .txt" />
+                                </StackPanel>
                             </Border>
+
                             <TextBlock
-                              x:Name="txtFileName"
-                              Margin="0,6,0,0"
-                              FontSize="11"
-                              Foreground="#666666"
-                              Text=""
-                              TextTrimming="CharacterEllipsis" />
+                                x:Name="txtFileName"
+                                Margin="0,6,0,0"
+                                FontSize="11"
+                                Foreground="#555555"
+                                Text=""
+                                TextTrimming="CharacterEllipsis" />
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
-                <Grid Grid.Row="2" Margin="0,20,0,0">
+
+                <!-- Footer -->
+                <Border
+                    Grid.Row="2"
+                    Padding="24,16"
+                    BorderBrush="#2a2a2a"
+                    BorderThickness="0,1,0,0">
                     <Button
-                      Height="42"
-                      HorizontalAlignment="Stretch"
-                      Command="{Binding StartExtractionCommand}"
-                      FontSize="14"
-                      Style="{StaticResource PrimaryButton}">
+                        Height="42"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding StartExtractionCommand}"
+                        FontSize="14"
+                        Style="{StaticResource PrimaryButton}">
                         <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                             <TextBlock VerticalAlignment="Center" Text="Iniciar Extração" />
                         </StackPanel>
                     </Button>
-                </Grid>
+                </Border>
+
             </Grid>
         </Border>
     </Grid>

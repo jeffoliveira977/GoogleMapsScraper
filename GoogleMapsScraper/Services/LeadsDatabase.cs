@@ -69,7 +69,7 @@ namespace GoogleMapsScraper.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"⚠️ Erro ao criar tabela: {ex.Message}");
+                Console.WriteLine($"Erro ao criar tabela: {ex.Message}");
             }
         }
 
@@ -147,7 +147,7 @@ namespace GoogleMapsScraper.Services
         {
             if (string.IsNullOrWhiteSpace(searchId))
             {
-                Console.WriteLine("⚠️ searchId inválido para deletar.");
+                Console.WriteLine("searchId inválido para deletar.");
                 return;
             }
 
@@ -168,11 +168,11 @@ namespace GoogleMapsScraper.Services
 
                 tx.Commit();
 
-                Console.WriteLine($"🗑️ Leads com searchId '{searchId}' deletados com sucesso.");
+                Console.WriteLine($"Leads com searchId '{searchId}' deletados com sucesso.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"⚠️ Erro ao deletar leads da busca '{searchId}': {ex.Message}");
+                Console.WriteLine($"Erro ao deletar leads da busca '{searchId}': {ex.Message}");
             }
         }
 

@@ -5,151 +5,139 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:GoogleMapsScraper.View"
              xmlns:viewmodel="clr-namespace:GoogleMapsScraper.ViewModel"
-             xmlns:converters="clr-namespace:GoogleMapsScraper.Converters"
+             xmlns:converters="clr-namespace:GoogleMapsScraper.Converters" xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              d:DataContext="{d:DesignInstance Type=viewmodel:MainViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    
+
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
     </UserControl.Resources>
-    
+
     <Grid
-      Grid.Row="1"
-      Visibility="{Binding IsTableVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+        Grid.Row="1"
+        Visibility="{Binding IsTableVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
         <Border
-          Grid.Row="0"
-          Margin="0,0,0,15"
-          Padding="0"
-          Background="Transparent">
+            Grid.Row="0"
+            Margin="0,0,0,15"
+            Padding="0"
+            Background="Transparent">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Button
-                  Grid.Column="0"
-                  Padding="12,8"
-                  HorizontalAlignment="Left"
-                  Background="White"
-                  Click="BackToCards_Click"
-                  Style="{StaticResource SecondaryButton}">
+
+                <ui:Button
+                    Grid.Column="0"
+                    Padding="16,8"
+                    HorizontalAlignment="Left"
+                    Click="BackToCards_Click"
+                  >
+                   
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource ArrowLeftIconGeometry}" Style="{StaticResource DefaultIcon}" />
                         <TextBlock
-                          VerticalAlignment="Center"
-                          FontWeight="SemiBold"
-                          Foreground="#333333"
-                          Text="Voltar para Buscas" />
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Foreground="#CCCCCC"
+                            Text="Voltar para Buscas" />
                     </StackPanel>
-                </Button>
+                </ui:Button>
+
                 <StackPanel
-                  Grid.Column="1"
-                  HorizontalAlignment="Right"
-                  Orientation="Horizontal">
-                    <Button
-                      x:Name="BtnExportDropdown"
-                      Margin="0,0,20,0"
-                      Padding="16,10"
-                      Click="ShowExportMenu_Click"
-                      Style="{StaticResource SecondaryButton}">
+                    Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal">
+                    <ui:Button
+                        x:Name="BtnExportDropdown"
+                        Margin="0,0,12,0"
+                        Padding="16,8"
+                        Click="ShowExportMenu_Click"
+                       
+                       >
+                       
                         <StackPanel Orientation="Horizontal">
                             <Path Data="{StaticResource FileExportIconGeometry}" Style="{StaticResource DefaultIcon}" />
-                            <TextBlock VerticalAlignment="Center" Text="Exportar Dados" />
+                            <TextBlock VerticalAlignment="Center" Foreground="#CCCCCC" Text="Exportar Dados" />
                         </StackPanel>
-                        <Button.ContextMenu>
+                        <ui:Button.ContextMenu>
                             <ContextMenu
-                              x:Name="ExportContextMenu"
-                              Placement="Bottom"
-                              PlacementTarget="{Binding ElementName=BtnExportDropdown}"
-                              StaysOpen="False"
-                              Style="{StaticResource ExportContextMenuStyle}">
-                                <MenuItem
-                                  Command="{Binding ExportCommand}"
-                                  Header="CSV (.csv)"
-                                  CommandParameter="CSV">
+                                x:Name="ExportContextMenu"
+                                Placement="Bottom"
+                                PlacementTarget="{Binding ElementName=BtnExportDropdown}"
+                                StaysOpen="False"
+                                Style="{StaticResource ExportContextMenuStyle}">
+                                <MenuItem Command="{Binding ExportCommand}" Header="CSV (.csv)" CommandParameter="CSV">
                                     <MenuItem.Icon>
-                                        <Path
-                                          Width="16"
-                                          Height="16"
-                                          Data="{StaticResource CsvIconGeometry}"
-                                          Style="{StaticResource DefaultIcon}" />
+                                        <Path Width="16" Height="16" Data="{StaticResource CsvIconGeometry}" Style="{StaticResource DefaultIcon}" />
                                     </MenuItem.Icon>
                                 </MenuItem>
-                                <MenuItem
-                                  Command="{Binding ExportCommand}"
-                                  Header="Excel (.xlsx)"
-                                  CommandParameter="Excel">
+                                <MenuItem Command="{Binding ExportCommand}" Header="Excel (.xlsx)" CommandParameter="Excel">
                                     <MenuItem.Icon>
-                                        <Path
-                                          Width="16"
-                                          Height="16"
-                                          Data="{StaticResource ExcelIconGeometry}"
-                                          Style="{StaticResource DefaultIcon}" />
+                                        <Path Width="16" Height="16" Data="{StaticResource ExcelIconGeometry}" Style="{StaticResource DefaultIcon}" />
                                     </MenuItem.Icon>
                                 </MenuItem>
-                                <MenuItem
-                                  Command="{Binding ExportCommand}"
-                                  Header="Json (.json)"
-                                  CommandParameter="Json">
+                                <MenuItem Command="{Binding ExportCommand}" Header="Json (.json)" CommandParameter="Json">
                                     <MenuItem.Icon>
-                                        <Path
-                                          Width="16"
-                                          Height="16"
-                                          Data="{StaticResource JsonIconGeometry}"
-                                          Style="{StaticResource DefaultIcon}" />
+                                        <Path Width="16" Height="16" Data="{StaticResource JsonIconGeometry}" Style="{StaticResource DefaultIcon}" />
                                     </MenuItem.Icon>
                                 </MenuItem>
                             </ContextMenu>
-                        </Button.ContextMenu>
-                    </Button>
-                    <Button
-                      Padding="16,8"
-                      Command="{Binding ClearCommand}"
-                      Style="{StaticResource SecondaryButton}">
+                        </ui:Button.ContextMenu>
+                    </ui:Button>
+
+                    <ui:Button
+                        Padding="16,8"
+                        Command="{Binding ClearCommand}"
+                       >
                         <StackPanel Orientation="Horizontal">
                             <Path Data="{StaticResource DeleteIconGeometry}" Style="{StaticResource DefaultIcon}" />
                             <TextBlock VerticalAlignment="Center" Text="Limpar" />
                         </StackPanel>
-                    </Button>
+                    </ui:Button>
                 </StackPanel>
             </Grid>
         </Border>
+
+        <!-- DataGrid -->
         <Border
-          Grid.Row="1"
-          Padding="0"
-          Background="White"
-          BorderBrush="#E0E0E0"
-          BorderThickness="1"
-          CornerRadius="12">
+            Grid.Row="1"
+            Padding="0"
+            Background="#1a1a1a"
+            BorderBrush="#2e2e2e"
+            BorderThickness="1"
+            CornerRadius="12">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <DataGrid
-                  x:Name="dgResults"
-                  Grid.Row="1"
-                  Margin="0"
-                  AlternatingRowBackground="#FAFAFA"
-                  AutoGenerateColumns="False"
-                  Background="White"
-                  BorderThickness="0"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  FontFamily="Segoe UI"
-                  FontSize="13"
-                  Foreground="#333333"
-                  GridLinesVisibility="None"
-                  HeadersVisibility="Column"
-                  ItemsSource="{Binding SearchProcessingViewModel.ExtractedLeads}"
-                  RowBackground="White"
-                  SelectionMode="Single">
+                    x:Name="dgResults"
+                    Grid.Row="1"
+                    Margin="0"
+                    AlternatingRowBackground="#1e1e1e"
+                    AutoGenerateColumns="False"
+                    Background="#1a1a1a"
+                    BorderThickness="0"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    FontFamily="Segoe UI"
+                    FontSize="13"
+                    Foreground="#CCCCCC"
+                    GridLinesVisibility="None"
+                    HeadersVisibility="Column"
+                    ItemsSource="{Binding SearchProcessingViewModel.ExtractedLeads}"
+                    RowBackground="#1a1a1a"
+                    SelectionMode="Single">
                     <DataGrid.Resources>
                         <Style TargetType="ScrollBar">
                             <Setter Property="Background" Value="Transparent" />
@@ -164,12 +152,12 @@
                                                         <Thumb.Template>
                                                             <ControlTemplate TargetType="Thumb">
                                                                 <Border
-                                                                  Margin="2,0"
-                                                                  Background="#D0D0D0"
-                                                                  CornerRadius="4" />
+                                                                    Margin="2,0"
+                                                                    Background="#3a3a3a"
+                                                                    CornerRadius="4" />
                                                                 <ControlTemplate.Triggers>
                                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                                        <Setter Property="Background" Value="#B0B0B0" />
+                                                                        <Setter Property="Background" Value="#555555" />
                                                                     </Trigger>
                                                                 </ControlTemplate.Triggers>
                                                             </ControlTemplate>
@@ -183,21 +171,24 @@
                             </Setter>
                         </Style>
                     </DataGrid.Resources>
+
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="#FAFAFA" />
-                            <Setter Property="Foreground" Value="#666666" />
+                            <Setter Property="Background" Value="#141414" />
+                            <Setter Property="Foreground" Value="#777777" />
                             <Setter Property="FontWeight" Value="SemiBold" />
                             <Setter Property="Padding" Value="20,15" />
                             <Setter Property="BorderThickness" Value="0,0,0,1" />
-                            <Setter Property="BorderBrush" Value="#F0F0F0" />
+                            <Setter Property="BorderBrush" Value="#2a2a2a" />
                             <Setter Property="HorizontalContentAlignment" Value="Left" />
                         </Style>
                     </DataGrid.ColumnHeaderStyle>
+
                     <DataGrid.CellStyle>
                         <Style TargetType="DataGridCell">
                             <Setter Property="BorderThickness" Value="0" />
                             <Setter Property="Padding" Value="20,12" />
+                            <Setter Property="Foreground" Value="#CCCCCC" />
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="DataGridCell">
@@ -209,122 +200,90 @@
                             </Setter>
                             <Style.Triggers>
                                 <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="#E8F4FF" />
-                                    <Setter Property="Foreground" Value="#333333" />
+                                    <Setter Property="Background" Value="#1e3a5f" />
+                                    <Setter Property="Foreground" Value="#E0E0E0" />
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
                     </DataGrid.CellStyle>
+
                     <DataGrid.RowStyle>
                         <Style TargetType="{x:Type DataGridRow}">
-                            <Setter Property="FontSize" Value="12"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="FontSize" Value="12" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter Property="Background" Value="#1a1a1a" />
+                            <Setter Property="Foreground" Value="#CCCCCC" />
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#222222" />
+                                </Trigger>
+                            </Style.Triggers>
                         </Style>
                     </DataGrid.RowStyle>
+
                     <DataGrid.Columns>
-                        <DataGridTextColumn
-                          Width="280"
-                          Binding="{Binding Name}"
-                          Header="Nome" />
-                        <DataGridTextColumn
-                          Width="280"                
-                          Binding="{Binding Categories}"
-                          Header="Categorias" />
+                        <DataGridTextColumn Width="280" Binding="{Binding Name}" Header="Nome" />
+                        <DataGridTextColumn Width="280" Binding="{Binding Categories}" Header="Categorias" />
+
                         <DataGridTemplateColumn Width="180" Header="Contatos">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                         <TextBlock Margin="0,0,4,0" Visibility="{Binding Url, Converter={StaticResource NullToVisibilityConverter}}">
-                                          <Hyperlink NavigateUri="{Binding Url}" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
-                                              <Path
-                                                  Width="12"
-                                                  Height="12"
-                                                  Data="{StaticResource GlobeIconGeometry}"
-                                                  Fill="#000000"
-                                                  Stretch="Uniform"
-                                                  ToolTip="Url" />
-                                          </Hyperlink>
+                                            <Hyperlink NavigateUri="{Binding Url}" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
+                                                <Path Width="12" Height="12" Data="{StaticResource GlobeIconGeometry}" Fill="#888888" Stretch="Uniform" ToolTip="Url" />
+                                            </Hyperlink>
                                         </TextBlock>
                                         <TextBlock Margin="0,0,4,0" Visibility="{Binding Facebook, Converter={StaticResource NullToVisibilityConverter}}">
-                                          <Hyperlink NavigateUri="{Binding Facebook}" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
-                                              <Path
-                                                  Width="12"
-                                                  Height="12"
-                                                  Data="{StaticResource FacebookIconGeometry}"
-                                                  Fill="#000000"
-                                                  Stretch="Uniform"
-                                                  ToolTip="Facebook" />
-                                          </Hyperlink>
+                                            <Hyperlink NavigateUri="{Binding Facebook}" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
+                                                <Path Width="12" Height="12" Data="{StaticResource FacebookIconGeometry}" Fill="#888888" Stretch="Uniform" ToolTip="Facebook" />
+                                            </Hyperlink>
                                         </TextBlock>
                                         <TextBlock Margin="0,0,4,0" Visibility="{Binding Instagram, Converter={StaticResource NullToVisibilityConverter}}">
-                                          <Hyperlink NavigateUri="{Binding Instagram}" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
-                                              <Path
-                                                  Width="12"
-                                                  Height="12"
-                                                  Data="{StaticResource InstagramIconGeometry}"
-                                                  Fill="#000000"
-                                                  Stretch="Uniform"
-                                                  ToolTip="Instagram" />
-                                          </Hyperlink>
+                                            <Hyperlink NavigateUri="{Binding Instagram}" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
+                                                <Path Width="12" Height="12" Data="{StaticResource InstagramIconGeometry}" Fill="#888888" Stretch="Uniform" ToolTip="Instagram" />
+                                            </Hyperlink>
                                         </TextBlock>
                                         <TextBlock Margin="0,0,4,0" Visibility="{Binding Youtube, Converter={StaticResource NullToVisibilityConverter}}">
-                                          <Hyperlink NavigateUri="{Binding Youtube}" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
-                                              <Path
-                                                  Width="12"
-                                                  Height="12"
-                                                  Data="{StaticResource YoutubeIconGeometry}"
-                                                  Fill="#000000"
-                                                  Stretch="Uniform"
-                                                  ToolTip="Youtube" />
-                                          </Hyperlink>
+                                            <Hyperlink NavigateUri="{Binding Youtube}" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
+                                                <Path Width="12" Height="12" Data="{StaticResource YoutubeIconGeometry}" Fill="#888888" Stretch="Uniform" ToolTip="Youtube" />
+                                            </Hyperlink>
                                         </TextBlock>
                                         <TextBlock Margin="0,0,4,0" Visibility="{Binding Twitter, Converter={StaticResource NullToVisibilityConverter}}">
-                                          <Hyperlink NavigateUri="{Binding Twitter}" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
-                                              <Path
-                                                  Width="12"
-                                                  Height="12"
-                                                  Data="{StaticResource TwitterIconGeometry}"
-                                                  Fill="#000000"
-                                                  Stretch="Uniform"
-                                                  ToolTip="Twitter" />
-                                          </Hyperlink>
+                                            <Hyperlink NavigateUri="{Binding Twitter}" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
+                                                <Path Width="12" Height="12" Data="{StaticResource TwitterIconGeometry}" Fill="#888888" Stretch="Uniform" ToolTip="Twitter" />
+                                            </Hyperlink>
                                         </TextBlock>
                                         <TextBlock Margin="0,0,4,0" Visibility="{Binding Tiktok, Converter={StaticResource NullToVisibilityConverter}}">
-                                          <Hyperlink NavigateUri="{Binding Tiktok}" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
-                                              <Path
-                                                  Width="12"
-                                                  Height="12"
-                                                  Data="{StaticResource TikTokIconGeometry}"
-                                                  Fill="#000000"
-                                                  Stretch="Uniform"
-                                                  ToolTip="TikTok" />
-                                          </Hyperlink>
+                                            <Hyperlink NavigateUri="{Binding Tiktok}" TextDecorations="None" RequestNavigate="Hyperlink_RequestNavigate">
+                                                <Path Width="12" Height="12" Data="{StaticResource TikTokIconGeometry}" Fill="#888888" Stretch="Uniform" ToolTip="TikTok" />
+                                            </Hyperlink>
                                         </TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
+
                         <DataGridTemplateColumn Width="100" Header="Ações">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                                        
-                                            <StackPanel Orientation="Horizontal">
-                                                <Path x:Name="EyeIconPath"
-Data="M80 80v96h96V80H80zM32 80c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H80c-26.5 0-48-21.5-48-48V80zM80 336v96h96V336H80zm-48 0c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H80c-26.5 0-48-21.5-48-48V336zM432 80H336v96h96V80zM336 32h96c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H336c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48zm0 304v96h96V336H336zm-48 0c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H336c-26.5 0-48-21.5-48-48V336z"
-Fill="#3B82F6"
-Stretch="Uniform"
-Width="20"
-Height="20"
-HorizontalAlignment="Center"
-VerticalAlignment="Center"
-RenderTransformOrigin="0.5,0.5">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path
+                                                x:Name="EyeIconPath"
+                                                Data="M80 80v96h96V80H80zM32 80c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H80c-26.5 0-48-21.5-48-48V80zM80 336v96h96V336H80zm-48 0c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H80c-26.5 0-48-21.5-48-48V336zM432 80H336v96h96V80zM336 32h96c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H336c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48zm0 304v96h96V336H336zm-48 0c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v96c0 26.5-21.5 48-48 48H336c-26.5 0-48-21.5-48-48V336z"
+                                                Fill="#60cdff"
+                                                Stretch="Uniform"
+                                                Width="20"
+                                                Height="20"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                RenderTransformOrigin="0.5,0.5">
                                                 <Path.RenderTransform>
-                                                    <RotateTransform x:Name="EyeIconRotation" Angle="0"/>
+                                                    <RotateTransform x:Name="EyeIconRotation" Angle="0" />
                                                 </Path.RenderTransform>
                                             </Path>
-                                                </StackPanel>
-                                        
+                                        </StackPanel>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

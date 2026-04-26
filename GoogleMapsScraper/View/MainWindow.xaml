@@ -1,47 +1,52 @@
-﻿<Window
+﻿<ui:FluentWindow
     x:Class="GoogleMapsScraper.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:converters="clr-namespace:GoogleMapsScraper.Converters"
-    xmlns:controls="clr-namespace:GoogleMapsScraper.Controls" 
-    xmlns:viewmodel="clr-namespace:GoogleMapsScraper.ViewModel" 
+    xmlns:controls="clr-namespace:GoogleMapsScraper.Controls"
+    xmlns:viewmodel="clr-namespace:GoogleMapsScraper.ViewModel"
     xmlns:view="clr-namespace:GoogleMapsScraper.View"
     Title="Google Maps Scraper"
     Width="1100"
     Height="750"
-    Background="#F5F5F5"
     ResizeMode="CanResizeWithGrip"
     WindowStartupLocation="CenterScreen"
-    >
+    ExtendsContentIntoTitleBar="True">
 
     <Window.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
-        <converters:StatusToColorConverter x:Key="StatusToColorCTonverter" />
+        <converters:StatusToColorConverter x:Key="StatusToColorConverter" />
     </Window.Resources>
-    
+
     <Window.DataContext>
         <viewmodel:MainViewModel />
     </Window.DataContext>
-    
-    <Grid>
-        
-        <controls:PlaywrightInstallPopup x:Name="PlaywrightPopupControl"  Panel.ZIndex="1000"/>
-        <controls:SearchBusinessPopup x:Name="SearchParametersModalControl"  Panel.ZIndex="1000"/>
 
-        <Grid x:Name="MainContent">
-           
-            <Grid Background="#F5F5F5">
+    <Grid>
+
+        <controls:PlaywrightInstallPopup x:Name="PlaywrightPopupControl" Panel.ZIndex="1000" />
+        <controls:SearchBusinessPopup x:Name="SearchParametersModalControl" Panel.ZIndex="1000" />
+
+        <!-- Barra de título nativa WPF-UI -->
+        <ui:TitleBar Title="Google Maps Scraper" Panel.ZIndex="100" />
+
+        <Grid x:Name="MainContent" Margin="0,40,0,0">
+
+            <Grid Background="#141414">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
+
+                <!-- Header -->
                 <Border
                     Grid.Row="0"
                     Padding="30,25"
-                    Background="White"
-                    BorderBrush="#E0E0E0"
+                    Background="#1a1a1a"
+                    BorderBrush="#2a2a2a"
                     BorderThickness="0,0,0,1">
                     <Grid>
                         <StackPanel>
@@ -49,116 +54,143 @@
                                 Margin="0,0,0,5"
                                 FontSize="24"
                                 FontWeight="Bold"
-                                Foreground="#333333"
+                                Foreground="#F0F0F0"
                                 Text="Google Maps Scraper" />
                             <TextBlock
                                 FontSize="14"
-                                Foreground="#666666"
+                                Foreground="#888888"
                                 Text="Extraia dados de estabelecimentos do Google Maps" />
                         </StackPanel>
-                        <Button
+                        <ui:Button
                             HorizontalAlignment="Right"
-                            Click="OpenModal_Click"
+                            VerticalAlignment="Center"
                             Content="Nova Busca"
-                            Style="{StaticResource PrimaryButton}" />
+                            Icon="{ui:SymbolIcon Add24}"
+                            
+                            Click="OpenModal_Click"/>
                     </Grid>
                 </Border>
 
+                <!-- Cards Grid -->
                 <Grid
                     x:Name="CardsGrid"
-                    Grid.Row="2"
+                    Grid.Row="1"
                     Margin="30"
                     Visibility="{Binding IsCardsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <ScrollViewer  Grid.Row="1" VerticalScrollBarVisibility="Auto">
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                         <ItemsControl
                             x:Name="CardsContainer"
-                            
                             ItemsSource="{Binding SearchProcessingViewModel.SearchLeads}"
                             RenderTransformOrigin="0.502,0.417">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel
                                         Margin="10"
-                                        ItemHeight="150"
-                                        ItemWidth="280"
+                                     
+                                        ItemWidth="680"
                                         Orientation="Horizontal" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Button
-                                        Command="{Binding DataContext.ViewSearchDetailsCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                        CommandParameter="{Binding}"
-                                        Style="{StaticResource CardActionButtonStyle}">
-                                        <Button.Content>
-                                            <StackPanel x:Name="GridItems">
+                                    <ui:CardAction
+        Margin="0,0,12,12"
+        Command="{Binding DataContext.ViewSearchDetailsCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+        CommandParameter="{Binding}"
+       >
+
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Título -->
+                                            <TextBlock
+                Grid.Row="0"
+                Margin="0,0,0,8"
+                FontSize="13"
+                FontWeight="SemiBold"
+                TextTrimming="WordEllipsis"
+                TextWrapping="NoWrap"
+                Foreground="#E0E0E0"
+                Text="{Binding SearchTerm}" />
+
+                                            <!-- Badge + data + leads na mesma linha -->
+                                            <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
+
+                                                <!-- Badge status -->
+                                                <Border Padding="6,2" CornerRadius="10" Margin="0,0,10,0">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="#2a2a2a" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Failed">
+                                                                    <Setter Property="Background" Value="#2e0e0e" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Success">
+                                                                    <Setter Property="Background" Value="#0d2e1a" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Completed">
+                                                                    <Setter Property="Background" Value="#0d2e1a" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Running">
+                                                                    <Setter Property="Background" Value="#2e1f08" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <Path Style="{StaticResource PathStatusIconStyle}" />
+                                                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="11"
+                            FontWeight="Bold"
+                            Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
+                            Text="{Binding Status}" />
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <!-- Separador -->
+                                                <Border Width="1" Height="12" Background="#333333" Margin="0,0,10,0" />
+
+                                                <!-- Data -->
+                                                <Path Data="{StaticResource CalendarIconGeometry}" Style="{StaticResource DefaultIcon}" />
                                                 <TextBlock
-                                                    Margin="0,0,0,10"
-                                                    FontSize="14"
-                                                    FontWeight="Bold"
-                                                    TextTrimming="WordEllipsis" 
-                                                    TextWrapping="NoWrap"
-                                                    Text="{Binding SearchTerm}" />
-                                                <Grid HorizontalAlignment="Left" VerticalAlignment="Center">
-                                                    <Border
-                                                        Margin="0,0,0,5"
-                                                        Padding="6,2"
-                                                        CornerRadius="10">
-                                                        <Border.Style>
-                                                            <Style TargetType="Border">
-                                                                <Setter Property="Background" Value="#FFF3F4F6" />
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding Status}" Value="Failed">
-                                                                        <Setter Property="Background" Value="#FFFBEEEE" />
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding Status}" Value="Success">
-                                                                        <Setter Property="Background" Value="#FFF3F9F5" />
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding Status}" Value="Running">
-                                                                        <Setter Property="Background" Value="#FFFDF6E7" />
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Border.Style>
-                                                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                                                            <Path Style="{StaticResource PathStatusIconStyle}" />
-                                                            <TextBlock
-                                                                VerticalAlignment="Center"
-                                                                FontSize="11"
-                                                                FontWeight="Bold"
-                                                                Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
-                                                                Text="{Binding Status}" />
-                                                        </StackPanel>
-                                                    </Border>
-                                                </Grid>
-                                                <StackPanel Margin="0,0,0,6" Orientation="Horizontal">
-                                                    <Path Data="{StaticResource CalendarIconGeometry}" Style="{StaticResource DefaultIcon}" />
-                                                    <TextBlock
-                                                        FontSize="12"
-                                                        Foreground="#6b7280"
-                                                        Text="{Binding CreatedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm:ss}'}" />
-                                                </StackPanel>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <Path Data="{StaticResource UsersIconGeometry}" Style="{StaticResource DefaultIcon}" />
-                                                    <TextBlock
-                                                        FontSize="12"
-                                                        Foreground="#6b7280"
-                                                        Text="{Binding TotalLeads, StringFormat='{}{0} leads'}" />
-                                                </StackPanel>
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    Foreground="#777777"
+                    Margin="0,0,10,0"
+                    Text="{Binding CreatedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" />
+
+                                                <!-- Separador -->
+                                                <Border Width="1" Height="12" Background="#333333" Margin="0,0,10,0" />
+
+                                                <!-- Leads -->
+                                                <Path Data="{StaticResource UsersIconGeometry}" Style="{StaticResource DefaultIcon}" />
+                                                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    Foreground="#777777"
+                    Text="{Binding TotalLeads, StringFormat='{}{0} leads'}" />
+
                                             </StackPanel>
-                                        </Button.Content>
-                                    </Button>
+                                        </Grid>
+
+                                    </ui:CardAction>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
                 </Grid>
             </Grid>
+
             <view:LeadsDataGrid x:Name="LeadsDataGridView" Margin="10,120,10,10" />
         </Grid>
     </Grid>
-</Window>
+</ui:FluentWindow>

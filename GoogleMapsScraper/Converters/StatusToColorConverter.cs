@@ -14,10 +14,10 @@ namespace GoogleMapsScraper.Converters
 
             string hexColor = status switch
             {
-                "failed" => "#DC2626", // red
-                "completed" => "#22C55E", // green
+                "failed" => "#f87171", // red
+                "completed" => "#4ade80", // green
                 "running" => "#2C2D42", // gray
-                "waiting" => "#EAB308", // yellow
+                "waiting" => "#fbbf24", // yellow
                 _ => "#6B7280"  // light gray
             };
 
